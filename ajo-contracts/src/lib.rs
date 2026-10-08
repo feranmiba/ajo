@@ -195,6 +195,7 @@ impl AjoContract {
         }
 
         let expected_pot = circle.amount * (circle.members.len() as i128);
+        // A payout is permitted only for a fully and exactly funded round.
         if round.total_collected != expected_pot {
             return Err(ContractError::RoundNotComplete);
         }

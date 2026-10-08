@@ -373,74 +373,258 @@ fn test_creating_multiple_circles_assigns_distinct_ids() {
     assert_eq!(client.get_circle(&first).status, CircleStatus::Created);
     assert_eq!(client.get_circle(&second).status, CircleStatus::Created);
 }
-
+/// Only the named member may authorize a contribution, even when they have funds.
 #[test]
-fn test_payout_requires_complete_pot_and_preserves_balances_on_failure() {
+fn test_contribute_requires_member_authorization() {
     let env = Env::default();
     env.mock_all_auths();
+
     let admin = Address::generate(&env);
     let member = Address::generate(&env);
     let token_admin = Address::generate(&env);
-    let (token_address, token_client, token_admin_client) = create_token_contract(&env, &token_admin);
+    let (token_address, token_client, token_admin_client) =
+        create_token_contract(&env, &token_admin);
     let contract_id = env.register_contract(None, AjoContract);
     let client = AjoContractClient::new(&env, &contract_id);
-    let amount = 50_000_000i128;
-    let circle_id = client.create_circle(&admin, &token_address, &amount, &3600, &2);
+    let amount = 50_000_000;
+
+    let circle_id = client.create_circle(&admin, &token_address, &amount, &60, &2);
     client.join(&circle_id, &member);
     client.start(&circle_id);
-    token_admin_client.mint(&admin, &amount);
     token_admin_client.mint(&member, &amount);
 
-    assert_eq!(client.try_payout(&circle_id), Err(Ok(ContractError::RoundNotComplete)));
-    assert_eq!(token_client.balance(&contract_id), 0);
-    assert_eq!(token_client.balance(&admin), amount);
-    client.contribute(&circle_id, &admin);
-    assert_eq!(client.get_round(&circle_id, &0).total_collected, amount);
-    assert_eq!(client.try_payout(&circle_id), Err(Ok(ContractError::RoundNotComplete)));
-    assert_eq!(token_client.balance(&contract_id), amount);
-    assert_eq!(token_client.balance(&admin), 0);
+    // Disable the authorization mocks used for fixture setup.
+    env.set_auths(&[]);
+    assert!(client.try_contribute(&circle_id, &member).is_err());
     assert_eq!(token_client.balance(&member), amount);
-    assert!(!client.get_round(&circle_id, &0).is_settled);
-    assert_eq!(client.get_circle(&circle_id).current_round, 0);
+    assert_eq!(token_client.balance(&contract_id), 0);
+    assert_eq!(client.get_round(&circle_id, &0).total_collected, 0);
+
+    // With authorization granted, the same funded member can contribute.
+    env.mock_all_auths();
+    client.contribute(&circle_id, &member);
+    assert!(
+        env.auths().iter().any(|(address, _)| address == &member),
+        "contribute must invoke member.require_auth()"
+    );
+    assert_eq!(token_client.balance(&member), 0);
+    assert_eq!(token_client.balance(&contract_id), amount);
+    assert_eq!(client.get_round(&circle_id, &0).total_collected, amount);
 }
 
 #[test]
-fn test_payout_transfers_full_pot_to_ordered_recipient_across_rounds() {
+fn test_contribution_rejects_invalid_configured_amount_and_insufficient_balance() {
     let env = Env::default();
     env.mock_all_auths();
+
     let admin = Address::generate(&env);
     let member = Address::generate(&env);
     let token_admin = Address::generate(&env);
-    let (token_address, token_client, token_admin_client) = create_token_contract(&env, &token_admin);
+    let (token_address, token_client, token_admin_client) =
+        create_token_contract(&env, &token_admin);
     let contract_id = env.register_contract(None, AjoContract);
     let client = AjoContractClient::new(&env, &contract_id);
-    let amount = 40_000_000i128;
-    let pot = amount * 2;
-    let circle_id = client.create_circle(&admin, &token_address, &amount, &3600, &2);
+
+    // contribute() takes no amount argument; the amount is fixed on create_circle().
+    for invalid in [0, -1, -50_000_000] {
+        assert_eq!(
+            client.try_create_circle(&admin, &token_address, &invalid, &60, &2),
+            Err(Ok(ContractError::InvalidAmount))
+        );
+    }
+
+    let amount = 50_000_000;
+    let circle_id = client.create_circle(&admin, &token_address, &amount, &60, &2);
     client.join(&circle_id, &member);
-    token_admin_client.mint(&admin, &(amount * 2));
-    token_admin_client.mint(&member, &(amount * 2));
     client.start(&circle_id);
 
-    for round_id in 0..2u32 {
+    // A member cannot contribute without enough SAC tokens.
+    assert!(client.try_contribute(&circle_id, &member).is_err());
+    assert_eq!(token_client.balance(&contract_id), 0);
+    let round = client.get_round(&circle_id, &0);
+    assert_eq!(round.total_collected, 0);
+    assert_eq!(round.paid_members.len(), 0);
+
+    // The failed transfer must not mark them as AlreadyPaid.
+    token_admin_client.mint(&member, &amount);
+    client.contribute(&circle_id, &member);
+    assert_eq!(token_client.balance(&member), 0);
+    assert_eq!(token_client.balance(&contract_id), amount);
+    let round = client.get_round(&circle_id, &0);
+    assert_eq!(round.total_collected, amount);
+    assert_eq!(round.paid_members.len(), 1);
+    assert_eq!(
+        client.try_contribute(&circle_id, &member),
+        Err(Ok(ContractError::AlreadyPaid))
+    );
+    assert_eq!(token_client.balance(&contract_id), amount);
+}
+
+#[test]
+fn test_nonmember_contribution_does_not_move_tokens_or_change_round() {
+    let env = Env::default();
+    env.mock_all_auths();
+
+    let admin = Address::generate(&env);
+    let outsider = Address::generate(&env);
+    let token_admin = Address::generate(&env);
+    let (token_address, token_client, token_admin_client) =
+        create_token_contract(&env, &token_admin);
+    let contract_id = env.register_contract(None, AjoContract);
+    let client = AjoContractClient::new(&env, &contract_id);
+    let amount = 75_000_000;
+
+    let circle_id = client.create_circle(&admin, &token_address, &amount, &60, &2);
+    client.start(&circle_id);
+    token_admin_client.mint(&outsider, &amount);
+
+    assert_eq!(
+        client.try_contribute(&circle_id, &outsider),
+        Err(Ok(ContractError::NotMember))
+    );
+    assert_eq!(token_client.balance(&outsider), amount);
+    assert_eq!(token_client.balance(&contract_id), 0);
+    let round = client.get_round(&circle_id, &0);
+    assert_eq!(round.total_collected, 0);
+    assert_eq!(round.paid_members.len(), 0);
+}
+
+#[test]
+fn test_contribute_rejects_completed_circle_without_moving_funds() {
+    let env = Env::default();
+    env.mock_all_auths();
+
+    let admin = Address::generate(&env);
+    let member = Address::generate(&env);
+    let token_admin = Address::generate(&env);
+    let (token_address, token_client, token_admin_client) =
+        create_token_contract(&env, &token_admin);
+    let contract_id = env.register_contract(None, AjoContract);
+    let client = AjoContractClient::new(&env, &contract_id);
+    let amount = 20_000_000;
+
+    let circle_id = client.create_circle(&admin, &token_address, &amount, &60, &2);
+    client.join(&circle_id, &member);
+    client.start(&circle_id);
+    token_admin_client.mint(&admin, &(amount * 2));
+    token_admin_client.mint(&member, &(amount * 2));
+
+    for _ in 0..2 {
         client.contribute(&circle_id, &admin);
         client.contribute(&circle_id, &member);
-        assert_eq!(client.get_round(&circle_id, &round_id).total_collected, pot);
-        assert_eq!(token_client.balance(&contract_id), pot);
-        let admin_before = token_client.balance(&admin);
-        let member_before = token_client.balance(&member);
         client.payout(&circle_id);
-        assert_eq!(token_client.balance(&contract_id), 0);
-        let admin_change = token_client.balance(&admin) - admin_before;
-        let member_change = token_client.balance(&member) - member_before;
-        if round_id == 0 {
-            assert_eq!(admin_change, pot);
-            assert_eq!(member_change, 0);
-        } else {
-            assert_eq!(admin_change, 0);
-            assert_eq!(member_change, pot);
-        }
-        assert!(client.get_round(&circle_id, &round_id).is_settled);
     }
+
     assert_eq!(client.get_circle(&circle_id).status, CircleStatus::Completed);
+    let previous_balance = token_client.balance(&admin);
+    assert_eq!(token_client.balance(&contract_id), 0);
+
+    // Contribute always addresses the current round: once the circle is
+    // completed, no additional contribution is possible.
+    assert_eq!(
+        client.try_contribute(&circle_id, &admin),
+        Err(Ok(ContractError::NotStarted))
+    );
+    assert_eq!(token_client.balance(&admin), previous_balance);
+    assert_eq!(token_client.balance(&contract_id), 0);
+    assert_eq!(client.get_circle(&circle_id).status, CircleStatus::Completed);
+}
+
+#[test]
+fn test_payout_requires_full_pot_and_transfers_exact_sac_balances() {
+    let env = Env::default();
+    env.mock_all_auths();
+
+    let admin = Address::generate(&env);
+    let member = Address::generate(&env);
+    let token_admin = Address::generate(&env);
+    let (token_address, token_client, token_admin_client) =
+        create_token_contract(&env, &token_admin);
+    let contract_id = env.register_contract(None, AjoContract);
+    let client = AjoContractClient::new(&env, &contract_id);
+
+    let amount = 50_000_000;
+    let target_pot = amount * 2;
+    let circle_id = client.create_circle(&admin, &token_address, &amount, &60, &2);
+    client.join(&circle_id, &member);
+    client.start(&circle_id);
+    token_admin_client.mint(&admin, &(amount * 2));
+    token_admin_client.mint(&member, &(amount * 2));
+
+    client.contribute(&circle_id, &admin);
+    let admin_before = token_client.balance(&admin);
+    let member_before = token_client.balance(&member);
+    let contract_before = token_client.balance(&contract_id);
+    assert_eq!(contract_before, amount);
+    assert_eq!(
+        client.try_payout(&circle_id),
+        Err(Ok(ContractError::RoundNotComplete))
+    );
+    assert_eq!(token_client.balance(&admin), admin_before);
+    assert_eq!(token_client.balance(&member), member_before);
+    assert_eq!(token_client.balance(&contract_id), contract_before);
+    assert!(!client.get_round(&circle_id, &0).is_settled);
+    assert_eq!(client.get_circle(&circle_id).current_round, 0);
+
+    client.contribute(&circle_id, &member);
+    assert_eq!(client.get_round(&circle_id, &0).total_collected, target_pot);
+    assert_eq!(token_client.balance(&contract_id), target_pot);
+    let recipient_before = token_client.balance(&admin);
+    client.payout(&circle_id);
+    assert_eq!(token_client.balance(&admin) - recipient_before, target_pot);
+    assert_eq!(token_client.balance(&contract_id), 0);
+    assert!(client.get_round(&circle_id, &0).is_settled);
+    assert_eq!(client.get_circle(&circle_id).current_round, 1);
+    assert_eq!(client.get_round(&circle_id, &1).total_collected, 0);
+
+    // In the second round, the designated beneficiary is the joined member.
+    client.contribute(&circle_id, &admin);
+    client.contribute(&circle_id, &member);
+    assert_eq!(token_client.balance(&contract_id), target_pot);
+    let member_before_payout = token_client.balance(&member);
+    client.payout(&circle_id);
+    assert_eq!(
+        token_client.balance(&member) - member_before_payout,
+        target_pot
+    );
+    assert_eq!(token_client.balance(&contract_id), 0);
+    assert!(client.get_round(&circle_id, &1).is_settled);
+    assert_eq!(client.get_circle(&circle_id).status, CircleStatus::Completed);
+}
+
+#[test]
+fn test_payout_rejects_overcollected_round_instead_of_transferring_partial_pot() {
+    let env = Env::default();
+    env.mock_all_auths();
+
+    let admin = Address::generate(&env);
+    let member = Address::generate(&env);
+    let token_admin = Address::generate(&env);
+    let (token_address, token_client, _) = create_token_contract(&env, &token_admin);
+    let contract_id = env.register_contract(None, AjoContract);
+    let client = AjoContractClient::new(&env, &contract_id);
+    let amount = 50_000_000;
+    let circle_id = client.create_circle(&admin, &token_address, &amount, &60, &2);
+    client.join(&circle_id, &member);
+    client.start(&circle_id);
+
+    // Overcollection is not possible through the normal contribute API.
+    // Inject inconsistent storage directly to verify the exact-equality guard.
+    env.as_contract(&contract_id, || {
+        let mut round = crate::storage::get_round(&env, circle_id, 0).unwrap();
+        round.total_collected = amount * 2 + 1;
+        crate::storage::set_round(&env, &round);
+    });
+
+    assert_eq!(
+        client.try_payout(&circle_id),
+        Err(Ok(ContractError::RoundNotComplete))
+    );
+    assert_eq!(token_client.balance(&admin), 0);
+    assert_eq!(token_client.balance(&member), 0);
+    assert_eq!(token_client.balance(&contract_id), 0);
+    let round = client.get_round(&circle_id, &0);
+    assert_eq!(round.total_collected, amount * 2 + 1);
+    assert!(!round.is_settled);
+    assert_eq!(client.get_circle(&circle_id).current_round, 0);
 }
