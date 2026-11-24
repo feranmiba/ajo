@@ -84,3 +84,21 @@ pub fn set_member_paid(env: &Env, circle_id: u64, round_id: u32, member: &Addres
         PERSISTENT_BUMP_AMOUNT,
     );
 }
+
+pub fn is_member_refunded(env: &Env, circle_id: u64, round_id: u32, member: &Address) -> bool {
+    let key = DataKey::MemberRefunded(circle_id, round_id, member.clone());
+    env.storage()
+        .persistent()
+        .get::<DataKey, bool>(&key)
+        .unwrap_or(false)
+}
+
+pub fn set_member_refunded(env: &Env, circle_id: u64, round_id: u32, member: &Address) {
+    let key = DataKey::MemberRefunded(circle_id, round_id, member.clone());
+    env.storage().persistent().set(&key, &true);
+    env.storage().persistent().extend_ttl(
+        &key,
+        PERSISTENT_LIFETIME_THRESHOLD,
+        PERSISTENT_BUMP_AMOUNT,
+    );
+}

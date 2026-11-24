@@ -628,3 +628,117 @@ fn test_payout_rejects_overcollected_round_instead_of_transferring_partial_pot()
     assert!(!round.is_settled);
     assert_eq!(client.get_circle(&circle_id).current_round, 0);
 }
+
+#[test]
+fn test_refund_before_deadline_fails() {
+    let env = Env::default();
+    env.mock_all_auths();
+
+    let admin = Address::generate(&env);
+    let member1 = Address::generate(&env);
+    let token_admin = Address::generate(&env);
+
+    let (token_address, _, token_admin_client) = create_token_contract(&env, &token_admin);
+    let contract_id = env.register_contract(None, AjoContract);
+    let client = AjoContractClient::new(&env, &contract_id);
+
+    let period_secs = 3600;
+    let circle_id = client.create_circle(&admin, &token_address, &50_000_000, &period_secs, &2);
+    client.join(&circle_id, &member1);
+    client.start(&circle_id);
+
+    token_admin_client.mint(&admin, &100_000_000);
+    client.contribute(&circle_id, &admin);
+
+    // Timestamp is at start_time; deadline has not passed
+    let res = client.try_refund_missed_round(&circle_id, &admin);
+    assert_eq!(res, Err(Ok(ContractError::DeadlineNotPassed)));
+}
+
+#[test]
+fn test_refund_for_non_contributor_fails() {
+    let env = Env::default();
+    env.mock_all_auths();
+
+    let admin = Address::generate(&env);
+    let member1 = Address::generate(&env);
+    let token_admin = Address::generate(&env);
+
+    let (token_address, _, _) = create_token_contract(&env, &token_admin);
+    let contract_id = env.register_contract(None, AjoContract);
+    let client = AjoContractClient::new(&env, &contract_id);
+
+    let period_secs = 3600;
+    let circle_id = client.create_circle(&admin, &token_address, &50_000_000, &period_secs, &2);
+    client.join(&circle_id, &member1);
+    client.start(&circle_id);
+
+    let start_time = env.ledger().timestamp();
+    env.ledger().set_timestamp(start_time + period_secs + 10);
+
+    // member1 did not contribute, refund must fail
+    let res = client.try_refund_missed_round(&circle_id, &member1);
+    assert_eq!(res, Err(Ok(ContractError::NotMember)));
+}
+
+#[test]
+fn test_refund_flow_multi_members_and_no_double_refund() {
+    let env = Env::default();
+    env.mock_all_auths();
+
+    let admin = Address::generate(&env);
+    let member1 = Address::generate(&env);
+    let member2 = Address::generate(&env);
+    let token_admin = Address::generate(&env);
+
+    let (token_address, token_client, token_admin_client) = create_token_contract(&env, &token_admin);
+    let contract_id = env.register_contract(None, AjoContract);
+    let client = AjoContractClient::new(&env, &contract_id);
+
+    let amount = 50_000_000; // 5 USDC
+    let period_secs = 3600;
+    let circle_id = client.create_circle(&admin, &token_address, &amount, &period_secs, &3);
+    client.join(&circle_id, &member1);
+    client.join(&circle_id, &member2);
+
+    token_admin_client.mint(&admin, &100_000_000);
+    token_admin_client.mint(&member1, &100_000_000);
+    token_admin_client.mint(&member2, &100_000_000);
+
+    client.start(&circle_id);
+
+    // admin and member1 contribute; member2 defaults
+    client.contribute(&circle_id, &admin);
+    client.contribute(&circle_id, &member1);
+
+    assert_eq!(token_client.balance(&admin), 50_000_000);
+    assert_eq!(token_client.balance(&member1), 50_000_000);
+    assert_eq!(token_client.balance(&contract_id), 100_000_000);
+
+    // Advance ledger past deadline
+    let start_time = env.ledger().timestamp();
+    env.ledger().set_timestamp(start_time + period_secs + 10);
+
+    // 1. Admin claims refund -> receives 50M back, circle becomes Cancelled
+    let admin_res = client.try_refund_missed_round(&circle_id, &admin);
+    assert_eq!(admin_res, Ok(Ok(())));
+    assert_eq!(token_client.balance(&admin), 100_000_000);
+
+    let circle = client.get_circle(&circle_id);
+    assert_eq!(circle.status, CircleStatus::Cancelled);
+
+    // 2. Member1 claims refund on the Cancelled circle -> also receives 50M back!
+    let member1_res = client.try_refund_missed_round(&circle_id, &member1);
+    assert_eq!(member1_res, Ok(Ok(())));
+    assert_eq!(token_client.balance(&member1), 100_000_000);
+
+    // Contract escrow should now be empty
+    assert_eq!(token_client.balance(&contract_id), 0);
+
+    // 3. Attempting double-refund must fail with AlreadyRefunded
+    let double_admin = client.try_refund_missed_round(&circle_id, &admin);
+    assert_eq!(double_admin, Err(Ok(ContractError::AlreadyRefunded)));
+
+    let double_member1 = client.try_refund_missed_round(&circle_id, &member1);
+    assert_eq!(double_member1, Err(Ok(ContractError::AlreadyRefunded)));
+}

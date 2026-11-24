@@ -240,7 +240,8 @@ impl AjoContract {
 
         let mut circle = get_circle(&env, circle_id).ok_or(ContractError::CircleNotFound)?;
 
-        if circle.status != CircleStatus::Active {
+        // Circle must be Active (first refund) or Cancelled (subsequent refunds for other contributors)
+        if circle.status != CircleStatus::Active && circle.status != CircleStatus::Cancelled {
             return Err(ContractError::NotStarted);
         }
 
@@ -262,13 +263,23 @@ impl AjoContract {
             return Err(ContractError::NotMember);
         }
 
+        // Prevent double-refund
+        if is_member_refunded(&env, circle_id, round_id, &member) {
+            return Err(ContractError::AlreadyRefunded);
+        }
+
+        // Mark member as refunded
+        set_member_refunded(&env, circle_id, round_id, &member);
+
         // Transfer refund to member
         let token_client = token::Client::new(&env, &circle.token);
         token_client.transfer(&env.current_contract_address(), &member, &circle.amount);
 
         // Mark circle as cancelled due to default
-        circle.status = CircleStatus::Cancelled;
-        set_circle(&env, &circle);
+        if circle.status != CircleStatus::Cancelled {
+            circle.status = CircleStatus::Cancelled;
+            set_circle(&env, &circle);
+        }
 
         events::emit_refund(&env, circle_id, round_id, &member, circle.amount);
 

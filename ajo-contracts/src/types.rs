@@ -42,4 +42,5 @@ pub enum DataKey {
     Circle(u64),
     Round(u64, u32),
     MemberPaid(u64, u32, Address),
+    MemberRefunded(u64, u32, Address),
 }

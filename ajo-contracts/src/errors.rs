@@ -21,4 +21,5 @@ pub enum ContractError {
     InvalidPeriod = 15,
     CircleCompleted = 16,
     CircleCancelled = 17,
+    AlreadyRefunded = 18,
 }
