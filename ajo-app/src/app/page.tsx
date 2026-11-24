@@ -177,7 +177,8 @@ export default function Home() {
             <div className="pt-6 border-t border-zinc-800/80 grid grid-cols-3 gap-4 font-mono text-xs">
               <div>
                 <span className="text-zinc-400 block text-[10px] uppercase">Pooled Escrow</span>
-                <span className="text-base font-bold text-white">{formatUSDC(totalValueLocked)}</span>
+                <span className="text-base font-bold text-white block">{formatUSDC(totalValueLocked)}</span>
+                <span className="text-[10px] text-zinc-400 block font-mono">~ {formatNGN(totalValueLocked)}</span>
               </div>
               <div>
                 <span className="text-zinc-400 block text-[10px] uppercase">Active Circles</span>

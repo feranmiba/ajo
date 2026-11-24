@@ -218,7 +218,7 @@ export const CircleDetailModal: React.FC<CircleDetailModalProps> = ({
                   className="w-full py-3 rounded-lg bg-white text-black font-bold uppercase tracking-wider hover:bg-zinc-200 transition flex items-center justify-center gap-2"
                 >
                   <Sparkles className="w-4 h-4" />
-                  <span>{isProcessing ? 'Processing Transfer...' : `Contribute ${formatUSDC(circle.amount)} USDC`}</span>
+                  <span>{isProcessing ? 'Processing Transfer...' : `Contribute ${formatUSDC(circle.amount)} USDC (~${formatNGN(circle.amount)})`}</span>
                 </button>
               )}
 

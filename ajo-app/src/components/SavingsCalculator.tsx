@@ -32,7 +32,10 @@ export const SavingsCalculator: React.FC = () => {
                 <span className="text-zinc-300 font-semibold uppercase tracking-wider flex items-center gap-1">
                   <DollarSign className="w-3.5 h-3.5 text-white" /> Contribution
                 </span>
-                <span className="font-bold text-white text-sm">{formatUSDC(amount)}</span>
+                <div className="text-right">
+                  <span className="font-bold text-white text-sm">{formatUSDC(amount)}</span>
+                  <span className="text-[10px] text-zinc-400 block font-mono">~ {formatNGN(amount)}</span>
+                </div>
               </div>
               <input
                 type="range"
