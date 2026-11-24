@@ -1,45 +1,32 @@
 'use client';
 
 import React, { useState } from 'react';
-import { motion, AnimatePresence } from 'framer-motion';
-import { PlusCircle, UserPlus, Coins, Gift, CheckCircle2 } from 'lucide-react';
+import { Plus, UserCheck, ShieldCheck, ArrowRight, Check } from 'lucide-react';
 
 const STEPS = [
   {
-    id: 1,
-    icon: PlusCircle,
-    title: '1. Create Circle',
-    subtitle: 'Admin Setup',
-    description: 'Circle creator defines contribution amount in USDC, member limit (e.g. 5 members), and round frequency (e.g. Weekly).',
-    badge: 'Soroban Init',
-    detail: 'Deploys circle state on-chain with deterministic parameters.',
+    step: '1',
+    title: 'Create and set terms',
+    summary: 'The organizer chooses the contribution amount, member capacity, and round frequency (such as $50 USDC every week).',
+    detail: 'Parameters are stored on-chain in the Soroban contract. The organizer automatically occupies the first slot in the circle.',
   },
   {
-    id: 2,
-    icon: UserPlus,
-    title: '2. Join Roster',
-    subtitle: 'Member Onboarding',
-    description: 'Group members connect Freighter wallet and execute join(circle_id). Membership locks when max limit is reached.',
-    badge: 'require_auth()',
-    detail: 'Contract verifies unique member addresses & locks rotation.',
+    step: '2',
+    title: 'Fill the roster',
+    summary: 'Invited participants connect their Stellar wallets and join the circle until the target member count is reached.',
+    detail: 'Once full, the organizer locks the roster. The contract permanently fixes the rotation sequence so turn orders cannot be swapped.',
   },
   {
-    id: 3,
-    icon: Coins,
-    title: '3. Periodic Contribution',
-    subtitle: 'Escrow Pool',
-    description: 'Each round, members approve and transfer their fixed contribution into the Soroban smart contract escrow.',
-    badge: 'USDC SAC',
-    detail: 'Stellar Asset Contract handles token transfers securely.',
+    step: '3',
+    title: 'Deposit each round',
+    summary: 'Members authorize their contribution in USDC each period directly to the Soroban contract escrow.',
+    detail: 'Funds never touch any private intermediary wallet. If a member misses a round deadline, active contributors can trigger a pro-rata refund.',
   },
   {
-    id: 4,
-    icon: Gift,
-    title: '4. Automated Payout',
-    subtitle: 'Round Settlement',
-    description: 'Once all contributions arrive, the smart contract disburses the entire round pot (~500 USDC) to the current turn recipient.',
-    badge: 'Auto Turn',
-    detail: 'Rounds advance automatically until every member receives their turn.',
+    step: '4',
+    title: 'Collect the pot',
+    summary: 'As soon as the round pool is complete, the contract disburses 100% of the funds directly to that round’s recipient.',
+    detail: 'Rounds advance automatically until every participant has received their payout turn, completing the cycle.',
   },
 ];
 
@@ -47,105 +34,65 @@ export const WorkflowVisualizer: React.FC = () => {
   const [activeStep, setActiveStep] = useState(0);
 
   return (
-    <div className="my-16">
-      <div className="text-center max-w-2xl mx-auto mb-8">
-        <span className="text-xs font-semibold px-3 py-1 rounded-full bg-zinc-800 text-zinc-300 border border-zinc-700 font-mono inline-block mb-2">
-          Protocol Architecture
-        </span>
-        <h2 className="text-2xl sm:text-4xl font-extrabold text-white tracking-tight">
-          How Ajo Protocol Works
+    <section className="my-20">
+      <div className="max-w-2xl mx-auto text-center mb-10">
+        <h2 className="text-2xl sm:text-3xl font-bold text-white tracking-tight">
+          How an Ajo circle runs
         </h2>
-        <p className="text-xs sm:text-sm text-zinc-400 mt-2 font-mono">
-          Digitizing traditional ROSCAs on Stellar Soroban with transparent smart contract mechanics.
+        <p className="text-sm text-slate-400 mt-2">
+          From first setup to final payout: automated rotation without an organizer holding the pool.
         </p>
       </div>
 
-      <div className="grid grid-cols-2 md:grid-cols-4 gap-3 max-w-5xl mx-auto mb-6">
-        {STEPS.map((step, idx) => {
-          const Icon = step.icon;
-          const isActive = activeStep === idx;
-          return (
-            <button
-              key={step.id}
-              onClick={() => setActiveStep(idx)}
-              className={`p-4 rounded-xl text-left border transition-all relative overflow-hidden group ${
-                isActive
-                  ? 'bg-white text-black border-white shadow-lg'
-                  : 'bg-zinc-900/80 border-zinc-800 text-zinc-400 hover:border-zinc-600 hover:text-white'
-              }`}
-            >
-              <div className="relative z-10 flex items-center justify-between mb-2">
-                <div
-                  className={`w-9 h-9 rounded-lg flex items-center justify-center font-bold text-sm ${
-                    isActive ? 'bg-black text-white' : 'bg-zinc-800 text-white'
-                  }`}
-                >
-                  <Icon className="w-5 h-5" />
+      <div className="max-w-4xl mx-auto">
+        {/* Step Selector Tabs */}
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-2 mb-6">
+          {STEPS.map((s, idx) => {
+            const isCurrent = activeStep === idx;
+            return (
+              <button
+                key={s.step}
+                type="button"
+                onClick={() => setActiveStep(idx)}
+                className={`p-4 rounded-xl text-left border transition-all ${
+                  isCurrent
+                    ? 'bg-[#161F2B] border-white/30 text-white shadow-sm'
+                    : 'bg-[#10161E] border-white/[0.06] text-slate-400 hover:text-slate-200 hover:border-white/[0.12]'
+                }`}
+              >
+                <div className="flex items-center justify-between mb-2">
+                  <span className={`text-xs font-semibold px-2 py-0.5 rounded ${
+                    isCurrent ? 'bg-[#E5A93C] text-black font-bold' : 'bg-white/[0.06] text-slate-400'
+                  }`}>
+                    Phase {s.step}
+                  </span>
                 </div>
-                <span className={`text-[10px] font-mono font-semibold px-2 py-0.5 rounded border ${
-                  isActive ? 'bg-zinc-200 text-black border-zinc-300' : 'bg-black text-zinc-400 border-zinc-800'
-                }`}>
-                  Step 0{step.id}
-                </span>
-              </div>
+                <h3 className={`text-xs sm:text-sm font-semibold leading-snug ${isCurrent ? 'text-white' : 'text-slate-300'}`}>
+                  {s.title}
+                </h3>
+              </button>
+            );
+          })}
+        </div>
 
-              <div className="relative z-10">
-                <h4 className={`font-bold text-sm ${isActive ? 'text-black' : 'text-white'}`}>
-                  {step.subtitle}
-                </h4>
-                <p className={`text-[11px] font-mono mt-0.5 ${isActive ? 'text-zinc-700' : 'text-zinc-400'}`}>
-                  {step.title}
-                </p>
-              </div>
-            </button>
-          );
-        })}
-      </div>
-
-      <div className="max-w-5xl mx-auto">
-        <AnimatePresence mode="wait">
-          <motion.div
-            key={activeStep}
-            initial={{ opacity: 0, y: 10 }}
-            animate={{ opacity: 1, y: 0 }}
-            exit={{ opacity: 0, y: -10 }}
-            transition={{ duration: 0.2 }}
-            className="bg-zinc-900 border border-zinc-800 p-6 sm:p-8 rounded-2xl flex flex-col md:flex-row gap-6 items-center justify-between relative overflow-hidden"
-          >
-            <div className="space-y-3 flex-1">
-              <div className="flex items-center gap-2 font-mono text-xs">
-                <span className="px-2.5 py-0.5 rounded-full bg-white text-black font-bold">
-                  {STEPS[activeStep].badge}
-                </span>
-                <span className="text-zinc-400">Phase {activeStep + 1} of 4</span>
-              </div>
-
-              <h3 className="text-xl sm:text-2xl font-bold text-white">
-                {STEPS[activeStep].title} &mdash; {STEPS[activeStep].subtitle}
-              </h3>
-
-              <p className="text-zinc-300 text-sm leading-relaxed">
-                {STEPS[activeStep].description}
-              </p>
-
-              <div className="pt-2 flex items-center gap-2 text-xs text-white font-mono">
-                <CheckCircle2 className="w-4 h-4 text-white shrink-0" />
-                <span>{STEPS[activeStep].detail}</span>
-              </div>
+        {/* Active Step Explainer Card */}
+        <div className="bg-[#121821] border border-white/[0.08] rounded-2xl p-6 sm:p-8">
+          <div className="max-w-2xl">
+            <span className="text-xs text-[#E5A93C] font-semibold tracking-wide">
+              Step {STEPS[activeStep].step} of 4
+            </span>
+            <h3 className="text-xl sm:text-2xl font-bold text-white mt-1 mb-3">
+              {STEPS[activeStep].title}
+            </h3>
+            <p className="text-sm text-slate-200 leading-relaxed">
+              {STEPS[activeStep].summary}
+            </p>
+            <div className="mt-5 pt-4 border-t border-white/[0.08] text-xs text-slate-400 leading-relaxed">
+              <strong className="text-slate-300">On-chain mechanism:</strong> {STEPS[activeStep].detail}
             </div>
-
-            <div className="w-full md:w-64 bg-black border border-zinc-800 p-6 rounded-xl text-center flex flex-col items-center justify-center shrink-0">
-              {React.createElement(STEPS[activeStep].icon, {
-                className: 'w-12 h-12 text-white mb-3',
-              })}
-              <span className="text-xs font-bold text-white uppercase tracking-wider block font-mono">
-                {STEPS[activeStep].badge}
-              </span>
-              <span className="text-[10px] text-zinc-400 block mt-1 font-mono">Stellar Testnet Ledger</span>
-            </div>
-          </motion.div>
-        </AnimatePresence>
+          </div>
+        </div>
       </div>
-    </div>
+    </section>
   );
 };

@@ -5,70 +5,67 @@ import Image from 'next/image';
 import Link from 'next/link';
 import { useWallet } from '@/context/WalletContext';
 import { formatAddress } from '@/lib/stellar';
-import { Wallet, LogOut, Globe, PlusCircle } from 'lucide-react';
+import { Wallet, LogOut, Plus } from 'lucide-react';
 
 export const Navbar = ({ onOpenCreate }: { onOpenCreate: () => void }) => {
   const { address, isConnected, isConnecting, connect, disconnect, network } = useWallet();
 
   return (
-    <header className="border-b border-zinc-800/80 bg-black/90 backdrop-blur sticky top-0 z-40">
+    <header className="border-b border-white/[0.08] bg-[#0B0F14]/95 backdrop-blur-md sticky top-0 z-40">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between">
-        {/* Brand Logo & Name */}
-        <Link href="/" className="flex items-center gap-3 group">
-          <div className="w-9 h-9 rounded-full overflow-hidden border border-zinc-700 relative group-hover:border-white transition-colors">
+        {/* Brand */}
+        <Link href="/" className="flex items-center gap-3">
+          <div className="w-8 h-8 rounded-full overflow-hidden border border-white/20 bg-slate-900 shrink-0">
             <Image
               src="/logo.jpg"
-              alt="Ajo Protocol"
-              width={36}
-              height={36}
+              alt="Ajo emblem"
+              width={32}
+              height={32}
               className="object-cover"
             />
           </div>
-          <div>
-            <span className="font-extrabold text-lg text-white tracking-tight flex items-center gap-1.5 font-mono">
-              AJO <span className="text-[10px] px-2 py-0.5 rounded bg-zinc-800 text-zinc-300 border border-zinc-700">Soroban</span>
-            </span>
+          <div className="flex items-baseline gap-2">
+            <span className="font-bold text-lg text-white tracking-tight">Ajo</span>
+            <span className="text-xs text-slate-400 hidden sm:inline">Rotating Savings on Stellar</span>
           </div>
         </Link>
 
-        {/* Action Buttons & Wallet Connection */}
+        {/* Actions */}
         <div className="flex items-center gap-3">
-          {/* Network Indicator */}
-          <div className="hidden md:flex items-center gap-1.5 text-xs text-zinc-400 bg-zinc-900 px-3 py-1.5 rounded-full border border-zinc-800 font-mono">
-            <Globe className="w-3.5 h-3.5 text-white" />
+          <div className="hidden md:flex items-center gap-2 text-xs text-slate-300 bg-white/[0.04] border border-white/[0.08] px-3 py-1.5 rounded-full">
+            <span className="w-1.5 h-1.5 rounded-full bg-emerald-400" />
             <span>Stellar {network}</span>
           </div>
 
-          {/* Create Circle Button */}
           <button
             onClick={onOpenCreate}
-            className="flex items-center gap-2 px-4 py-1.5 text-sm font-semibold rounded-lg bg-zinc-900 hover:bg-zinc-800 text-white border border-zinc-700 transition"
+            className="flex items-center gap-1.5 px-3.5 py-1.5 text-xs font-semibold rounded-lg bg-white/[0.06] hover:bg-white/[0.1] text-white border border-white/[0.12] transition"
           >
-            <PlusCircle className="w-4 h-4 text-white" />
-            <span className="hidden sm:inline">Create Circle</span>
+            <Plus className="w-3.5 h-3.5" />
+            <span>Start a circle</span>
           </button>
 
-          {/* Wallet Button */}
           {isConnected ? (
-            <div className="flex items-center gap-2 bg-zinc-900 border border-zinc-700 rounded-lg px-3 py-1.5">
-              <div className="w-2 h-2 rounded-full bg-white animate-pulse" />
-              <span className="font-mono text-sm font-medium text-white">{formatAddress(address!)}</span>
+            <div className="flex items-center gap-2 bg-white/[0.05] border border-white/[0.12] rounded-lg px-3 py-1.5">
+              <span className="w-2 h-2 rounded-full bg-emerald-400" />
+              <span className="font-mono text-xs text-slate-200">{formatAddress(address!)}</span>
               <button
                 onClick={disconnect}
-                className="text-zinc-400 hover:text-white p-1 transition"
-                title="Disconnect Wallet"
+                className="text-slate-400 hover:text-white p-0.5 transition"
+                title="Disconnect wallet"
+                aria-label="Disconnect wallet"
               >
-                <LogOut className="w-4 h-4" />
+                <LogOut className="w-3.5 h-3.5" />
               </button>
             </div>
           ) : (
             <button
               onClick={connect}
               disabled={isConnecting}
-              className="flex items-center gap-2 px-4 py-1.5 text-sm font-bold rounded-lg bg-white text-black hover:bg-zinc-200 transition shadow-md"
+              className="flex items-center gap-2 px-3.5 py-1.5 text-xs font-medium rounded-lg bg-[#E5A93C] text-black hover:bg-[#F5BE58] transition shadow-sm"
             >
-              <Wallet className="w-4 h-4" />
-              <span>{isConnecting ? 'Connecting...' : 'Connect Wallet'}</span>
+              <Wallet className="w-3.5 h-3.5" />
+              <span>{isConnecting ? 'Connecting...' : 'Connect wallet'}</span>
             </button>
           )}
         </div>

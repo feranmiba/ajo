@@ -3,55 +3,37 @@
 @tailwind utilities;
 
 :root {
-  --background: #050505;
-  --foreground: #ffffff;
+  --background: #0B0F14;
+  --foreground: #F8FAFC;
 }
 
 body {
   color: var(--foreground);
   background: var(--background);
-  font-family: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
   min-height: 100vh;
   overflow-x: hidden;
+  line-height: 1.5;
+  -webkit-font-smoothing: antialiased;
 }
 
-/* High Contrast Monochrome Glassmorphism */
-.glass-card-mono {
-  background: rgba(18, 18, 18, 0.85);
-  backdrop-filter: blur(16px);
-  -webkit-backdrop-filter: blur(16px);
-  border: 1px solid rgba(255, 255, 255, 0.12);
+/* Numeric alignment for financial figures */
+.tabular-nums {
+  font-variant-numeric: tabular-nums;
 }
 
-.glass-card-mono-hover {
-  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-}
-
-.glass-card-mono-hover:hover {
-  border-color: rgba(255, 255, 255, 0.4);
-  box-shadow: 0 10px 30px -10px rgba(255, 255, 255, 0.1);
-  transform: translateY(-2px);
-}
-
-/* Stark White Gradient Text */
-.text-gradient-mono {
-  background: linear-gradient(135deg, #ffffff 0%, #d4d4d8 60%, #a1a1aa 100%);
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
-}
-
-/* Custom Scrollbar */
+/* Custom quiet scrollbar */
 ::-webkit-scrollbar {
   width: 6px;
   height: 6px;
 }
 ::-webkit-scrollbar-track {
-  background: #050505;
+  background: #0B0F14;
 }
 ::-webkit-scrollbar-thumb {
-  background: #27272a;
+  background: #232D3B;
   border-radius: 3px;
 }
 ::-webkit-scrollbar-thumb:hover {
-  background: #3f3f46;
+  background: #334155;
 }

@@ -2,122 +2,154 @@
 
 import React, { useState } from 'react';
 import { formatUSDC, formatNGN } from '@/lib/stellar';
-import { Calculator, DollarSign, Users, Calendar } from 'lucide-react';
+import { Users, Calendar, Coins, ArrowRight } from 'lucide-react';
 
 export const SavingsCalculator: React.FC = () => {
-  const [amount, setAmount] = useState<number>(50);
-  const [members, setMembers] = useState<number>(5);
-  const [frequencyDays, setFrequencyDays] = useState<number>(7);
+  const [amount, setAmount] = useState<number>(50); // in USDC
+  const [members, setMembers] = useState<number>(6);
+  const [frequencyDays, setFrequencyDays] = useState<number>(7); // Weekly default
 
   const totalPot = amount * members;
-  const cycleDurationDays = frequencyDays * members;
+  const cycleDurationDays = members * frequencyDays;
+
+  const frequencyLabel = {
+    1: 'daily',
+    7: 'weekly',
+    14: 'bi-weekly',
+    30: 'monthly',
+  }[frequencyDays] || `${frequencyDays} days`;
 
   return (
-    <div className="my-16 max-w-4xl mx-auto">
-      <div className="bg-zinc-900 border border-zinc-800 p-6 sm:p-8 rounded-3xl relative overflow-hidden">
-        <div className="flex items-center gap-3 mb-6">
-          <div className="w-10 h-10 rounded-xl bg-black border border-zinc-700 flex items-center justify-center text-white">
-            <Calculator className="w-5 h-5" />
-          </div>
+    <section className="my-20">
+      <div className="max-w-2xl mx-auto text-center mb-10">
+        <h2 className="text-2xl sm:text-3xl font-bold text-white tracking-tight">
+          Savings planner
+        </h2>
+        <p className="text-sm text-slate-400 mt-2">
+          Model your circle. See how much each member contributes and the lump-sum you collect on your payout round.
+        </p>
+      </div>
+
+      <div className="max-w-4xl mx-auto bg-[#121821] border border-white/[0.08] rounded-3xl p-6 sm:p-8 grid grid-cols-1 md:grid-cols-12 gap-8 items-center">
+        {/* Controls */}
+        <div className="md:col-span-7 space-y-6">
+          {/* Contribution Amount */}
           <div>
-            <h3 className="text-xl font-bold text-white">ROSCA Savings Calculator</h3>
-            <p className="text-xs text-zinc-400 font-mono">Simulate your turn payout & local currency returns</p>
+            <div className="flex justify-between items-baseline mb-2">
+              <label htmlFor="contribution-slider" className="text-sm font-medium text-slate-200">
+                Contribution per round
+              </label>
+              <div className="text-right">
+                <span className="text-lg font-bold text-white tabular-nums">
+                  {formatUSDC(amount)}
+                </span>
+                <span className="text-xs text-[#E5A93C] font-medium block">
+                  ~ {formatNGN(amount)}
+                </span>
+              </div>
+            </div>
+            <input
+              id="contribution-slider"
+              type="range"
+              min="10"
+              max="500"
+              step="10"
+              value={amount}
+              onChange={(e) => setAmount(Number(e.target.value))}
+              className="w-full h-2 bg-slate-800 rounded-lg appearance-none cursor-pointer accent-[#E5A93C]"
+            />
+            <div className="flex justify-between text-[11px] text-slate-500 mt-1">
+              <span>$10</span>
+              <span>$250</span>
+              <span>$500</span>
+            </div>
+          </div>
+
+          {/* Members Count */}
+          <div>
+            <div className="flex justify-between items-baseline mb-2">
+              <label htmlFor="members-slider" className="text-sm font-medium text-slate-200">
+                Circle size
+              </label>
+              <span className="text-base font-bold text-white tabular-nums">
+                {members} members
+              </span>
+            </div>
+            <input
+              id="members-slider"
+              type="range"
+              min="2"
+              max="12"
+              step="1"
+              value={members}
+              onChange={(e) => setMembers(Number(e.target.value))}
+              className="w-full h-2 bg-slate-800 rounded-lg appearance-none cursor-pointer accent-[#E5A93C]"
+            />
+            <div className="flex justify-between text-[11px] text-slate-500 mt-1">
+              <span>2 members</span>
+              <span>6 members</span>
+              <span>12 members</span>
+            </div>
+          </div>
+
+          {/* Frequency */}
+          <div>
+            <span className="block text-sm font-medium text-slate-200 mb-2">
+              Round schedule
+            </span>
+            <div className="grid grid-cols-3 gap-2">
+              {[
+                { label: 'Weekly', days: 7 },
+                { label: 'Bi-weekly', days: 14 },
+                { label: 'Monthly', days: 30 },
+              ].map((item) => (
+                <button
+                  key={item.label}
+                  type="button"
+                  onClick={() => setFrequencyDays(item.days)}
+                  className={`py-2 px-3 rounded-xl border text-xs font-medium transition ${
+                    frequencyDays === item.days
+                      ? 'bg-white text-black border-white font-semibold'
+                      : 'bg-white/[0.03] border-white/[0.08] text-slate-300 hover:text-white hover:bg-white/[0.06]'
+                  }`}
+                >
+                  {item.label}
+                </button>
+              ))}
+            </div>
           </div>
         </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-8 items-center">
-          <div className="space-y-5">
-            <div>
-              <div className="flex justify-between items-center mb-1.5 text-xs font-mono">
-                <span className="text-zinc-300 font-semibold uppercase tracking-wider flex items-center gap-1">
-                  <DollarSign className="w-3.5 h-3.5 text-white" /> Contribution
-                </span>
-                <div className="text-right">
-                  <span className="font-bold text-white text-sm">{formatUSDC(amount)}</span>
-                  <span className="text-[10px] text-zinc-400 block font-mono">~ {formatNGN(amount)}</span>
-                </div>
-              </div>
-              <input
-                type="range"
-                min="10"
-                max="500"
-                step="10"
-                value={amount}
-                onChange={(e) => setAmount(Number(e.target.value))}
-                className="w-full h-2 bg-zinc-800 rounded-lg appearance-none cursor-pointer accent-white"
-              />
-            </div>
+        {/* Output Summary Card */}
+        <div className="md:col-span-5 bg-[#0B0F14] border border-white/[0.1] rounded-2xl p-6 flex flex-col justify-between h-full">
+          <div>
+            <span className="text-xs text-slate-400 block mb-1">
+              Your lump-sum payout
+            </span>
+            <span className="text-3xl sm:text-4xl font-extrabold text-white tabular-nums tracking-tight block">
+              {formatUSDC(totalPot)}
+            </span>
+            <span className="text-sm text-[#E5A93C] font-semibold block mt-1">
+              ~ {formatNGN(totalPot)} NGN
+            </span>
 
-            <div>
-              <div className="flex justify-between items-center mb-1.5 text-xs font-mono">
-                <span className="text-zinc-300 font-semibold uppercase tracking-wider flex items-center gap-1">
-                  <Users className="w-3.5 h-3.5 text-white" /> Circle Size
-                </span>
-                <span className="font-bold text-white text-sm">{members} Members</span>
-              </div>
-              <input
-                type="range"
-                min="2"
-                max="12"
-                step="1"
-                value={members}
-                onChange={(e) => setMembers(Number(e.target.value))}
-                className="w-full h-2 bg-zinc-800 rounded-lg appearance-none cursor-pointer accent-white"
-              />
-            </div>
-
-            <div>
-              <label className="block text-xs font-semibold uppercase tracking-wider text-zinc-300 font-mono mb-1.5 flex items-center gap-1">
-                <Calendar className="w-3.5 h-3.5 text-white" /> Frequency
-              </label>
-              <div className="grid grid-cols-3 gap-2 font-mono text-xs">
-                {[
-                  { label: 'Daily', days: 1 },
-                  { label: 'Weekly', days: 7 },
-                  { label: 'Monthly', days: 30 },
-                ].map((item) => (
-                  <button
-                    key={item.label}
-                    onClick={() => setFrequencyDays(item.days)}
-                    className={`py-2 rounded-lg border font-medium transition ${
-                      frequencyDays === item.days
-                        ? 'bg-white text-black border-white font-bold'
-                        : 'bg-black border-zinc-800 text-zinc-400 hover:text-white'
-                    }`}
-                  >
-                    {item.label}
-                  </button>
-                ))}
-              </div>
-            </div>
+            <p className="text-xs text-slate-400 mt-4 leading-relaxed">
+              You contribute {formatUSDC(amount)} {frequencyLabel} for {members} rounds. When your scheduled turn arrives, you collect the full {formatUSDC(totalPot)} pot in one disbursement.
+            </p>
           </div>
 
-          <div className="bg-black border border-zinc-800 p-6 rounded-2xl text-center flex flex-col justify-between h-full relative font-mono">
+          <div className="mt-6 pt-4 border-t border-white/[0.08] grid grid-cols-2 gap-3 text-xs">
             <div>
-              <span className="text-[10px] text-zinc-400 uppercase tracking-widest block">
-                Your Lump-Sum Payout
-              </span>
-              <span className="text-3xl sm:text-4xl font-extrabold text-white my-2 block">
-                {formatUSDC(totalPot)}
-              </span>
-              <span className="text-sm font-semibold text-zinc-300 block">
-                ~ {formatNGN(totalPot)} NGN
-              </span>
+              <span className="text-slate-500 block">Total cycle</span>
+              <span className="font-semibold text-white">{cycleDurationDays} days</span>
             </div>
-
-            <div className="mt-6 pt-4 border-t border-zinc-800 grid grid-cols-2 gap-2 text-xs">
-              <div>
-                <span className="text-zinc-400 block">Total Cycle</span>
-                <span className="font-bold text-white">{cycleDurationDays} Days</span>
-              </div>
-              <div>
-                <span className="text-zinc-400 block">Rounds</span>
-                <span className="font-bold text-white">{members} Rounds</span>
-              </div>
+            <div>
+              <span className="text-slate-500 block">Rounds in circle</span>
+              <span className="font-semibold text-white">{members} rounds</span>
             </div>
           </div>
         </div>
       </div>
-    </div>
+    </section>
   );
 };

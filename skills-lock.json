@@ -1,0 +1,19 @@
+{
+  "version": 2,
+  "skills": {
+    "audit-ai-design-slop": {
+      "source": "MengTo/Skills",
+      "commit": "e7df6eb7124095d6c7fbc71c8909f8896d061850",
+      "sourceType": "github",
+      "skillPath": "agent-skills/ui/audit-ai-design-slop/SKILL.md",
+      "computedHash": "3397b8c0b2f8510f5eae67351501079e9e7a65189268ff62d7f4ce2b7da99d32"
+    },
+    "frontend-design": {
+      "source": "anthropics/skills",
+      "commit": "e4bb5d960d87126ff3b3a8af1a104b7db67560ba",
+      "sourceType": "github",
+      "skillPath": "skills/frontend-design/SKILL.md",
+      "computedHash": "83485963700bcf11d5bf78118facb301676b69d918fee2e45a95e7f1a2840f6c"
+    }
+  }
+}

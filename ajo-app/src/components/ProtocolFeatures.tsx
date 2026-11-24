@@ -1,91 +1,66 @@
 'use client';
 
 import React from 'react';
-import { motion } from 'framer-motion';
-import { ShieldCheck, Coins, Zap, RefreshCw, Lock, Globe2 } from 'lucide-react';
+import { ShieldCheck, RefreshCw, Undo2, Coins } from 'lucide-react';
 
-const FEATURES = [
+const GUARANTEES = [
   {
     icon: ShieldCheck,
-    title: 'Soroban Smart Contract Escrow',
-    description: 'Funds are held in non-custodial Rust smart contract escrow. Admins cannot withdraw pooled assets outside of settled payouts.',
-  },
-  {
-    icon: Coins,
-    title: 'USDC Inflation Resistance',
-    description: 'Native USDC stablecoin support prevents local currency inflation and native XLM price volatility from breaking fixed targets.',
-  },
-  {
-    icon: Zap,
-    title: 'Instant Stellar Finality',
-    description: 'Sub-second transactions with micro-cent gas fees on Stellar network ensure quick contributions and instant round payouts.',
+    title: 'Non-custodial escrow',
+    description: 'Deposits live inside the Soroban contract. The circle organizer cannot withdraw or redirect funds to private wallets.',
   },
   {
     icon: RefreshCw,
-    title: 'Immutable Rotation Order',
-    description: 'Payout sequence is locked upon circle start. Rounds advance automatically once all contributions are collected.',
+    title: 'Immutable payout order',
+    description: 'The rotation schedule is locked the moment the circle activates. Turn orders cannot be skipped or rescheduled.',
   },
   {
-    icon: Lock,
-    title: 'Missed Round Protection',
-    description: 'If a member misses a round deadline, active contributors can trigger a pro-rata escrow refund and cancel the circle.',
+    icon: Undo2,
+    title: 'Missed-round refunds',
+    description: 'If a round deadline expires with missing contributions, active contributors can trigger a pro-rata refund and close the circle.',
   },
   {
-    icon: Globe2,
-    title: 'Local NGN Rate Contextualization',
-    description: 'Real-time USD/NGN rate feed displays estimated Naira equivalents for Nigerian ROSCA participants.',
+    icon: Coins,
+    title: 'Inflation protection',
+    description: 'Saving in USDC shields the group from domestic currency volatility, while live Naira estimations keep savings targets clear.',
   },
 ];
 
 export const ProtocolFeatures: React.FC = () => {
   return (
-    <div className="my-16">
-      <div className="text-center max-w-2xl mx-auto mb-10">
-        <span className="text-xs font-semibold px-3 py-1 rounded-full bg-zinc-800 text-zinc-300 border border-zinc-700 font-mono inline-block mb-2">
-          Protocol Guarantees
-        </span>
-        <h2 className="text-2xl sm:text-4xl font-extrabold text-white tracking-tight">
-          Why Build ROSCAs on Ajo Protocol?
+    <section className="my-20">
+      <div className="max-w-2xl mx-auto text-center mb-10">
+        <h2 className="text-2xl sm:text-3xl font-bold text-white tracking-tight">
+          How Soroban protects your circle
         </h2>
-        <p className="text-xs sm:text-sm text-zinc-400 mt-2 font-mono">
-          Replacing traditional manual ledger tracking with verifiable blockchain primitives.
+        <p className="text-sm text-slate-400 mt-2">
+          Replacing handwritten books and informal cash holding with verifiable code on Stellar.
         </p>
       </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 max-w-6xl mx-auto">
-        {FEATURES.map((feature, idx) => {
-          const Icon = feature.icon;
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 max-w-6xl mx-auto">
+        {GUARANTEES.map((item) => {
+          const Icon = item.icon;
           return (
-            <motion.div
-              key={feature.title}
-              initial={{ opacity: 0, y: 15 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              viewport={{ once: true }}
-              transition={{ duration: 0.25, delay: idx * 0.05 }}
-              className="bg-zinc-900/90 border border-zinc-800 hover:border-white p-6 rounded-2xl flex flex-col justify-between group transition-all"
+            <div
+              key={item.title}
+              className="bg-[#121821] border border-white/[0.08] p-5 rounded-2xl flex flex-col justify-between"
             >
               <div>
-                <div className="w-10 h-10 rounded-xl bg-black border border-zinc-700 flex items-center justify-center mb-4 text-white group-hover:bg-white group-hover:text-black transition-colors">
-                  <Icon className="w-5 h-5" />
+                <div className="w-8 h-8 rounded-lg bg-white/[0.05] border border-white/[0.1] flex items-center justify-center text-[#E5A93C] mb-3">
+                  <Icon className="w-4 h-4" />
                 </div>
-
-                <h3 className="font-bold text-base text-white mb-2 group-hover:text-zinc-200 transition-colors">
-                  {feature.title}
+                <h3 className="font-semibold text-sm text-white mb-1.5">
+                  {item.title}
                 </h3>
-
-                <p className="text-xs text-zinc-400 leading-relaxed">
-                  {feature.description}
+                <p className="text-xs text-slate-400 leading-relaxed">
+                  {item.description}
                 </p>
               </div>
-
-              <div className="mt-4 pt-3 border-t border-zinc-800/80 flex items-center justify-between text-[10px] text-zinc-400 font-mono">
-                <span>Verified Primitive</span>
-                <span className="text-white font-bold">On-Chain</span>
-              </div>
-            </motion.div>
+            </div>
           );
         })}
       </div>
-    </div>
+    </section>
   );
 };
