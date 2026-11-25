@@ -1,21 +1,21 @@
 'use client';
 
 import React from 'react';
-import { AlertCircle } from 'lucide-react';
+import { ShieldAlert } from 'lucide-react';
 
 export const RiskBanner = () => {
   return (
-    <aside aria-label="Network and safety notice" className="bg-[#101720] border-b border-white/[0.08] text-slate-300 px-4 py-2 text-xs">
-      <div className="max-w-7xl mx-auto flex items-center justify-between gap-4">
+    <aside aria-label="Network and safety notice" className="bg-[#18181b] border-b border-zinc-800 text-zinc-300 px-4 py-2.5 text-xs font-mono">
+      <div className="max-w-7xl mx-auto flex items-center justify-between gap-3">
         <div className="flex items-center gap-2">
-          <AlertCircle className="w-3.5 h-3.5 text-[#E5A93C] shrink-0" />
-          <p>
-            <span className="font-semibold text-white">Stellar Testnet:</span> Smart contracts automate escrow and payouts, but cannot eliminate peer default risk. Use testnet USDC only.
-          </p>
+          <ShieldAlert className="w-4 h-4 text-white shrink-0" />
+          <span>
+            <strong className="text-white">Experimental Testnet:</strong> Smart contracts manage escrow and rotation. Peer default risk remains. Testnet USDC only.
+          </span>
         </div>
         <a
           href="/TRUST_ASSUMPTIONS.md"
-          className="text-xs text-slate-300 hover:text-white underline underline-offset-2 shrink-0 hidden sm:inline"
+          className="underline text-white hover:text-zinc-300 shrink-0 font-medium hidden sm:inline py-1"
         >
           Trust assumptions
         </a>

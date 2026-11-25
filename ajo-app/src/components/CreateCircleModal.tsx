@@ -2,8 +2,8 @@
 
 import React, { useState } from 'react';
 import { useWallet } from '@/context/WalletContext';
-import { formatNGN, formatUSDC } from '@/lib/stellar';
-import { X, Plus } from 'lucide-react';
+import { formatNGN } from '@/lib/stellar';
+import { X, PlusCircle } from 'lucide-react';
 
 interface CreateCircleModalProps {
   isOpen: boolean;
@@ -61,27 +61,30 @@ export const CreateCircleModal: React.FC<CreateCircleModalProps> = ({
   const potTotal = usdcNum * (parseInt(maxMembers) || 0);
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm">
-      <div className="bg-[#121821] border border-white/[0.1] rounded-2xl max-w-md w-full p-6 relative shadow-2xl">
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/90 backdrop-blur-md">
+      <div className="bg-[#18181b] border border-zinc-700 rounded-2xl max-w-md w-full p-6 relative shadow-2xl">
         <button
           onClick={onClose}
-          className="absolute top-4 right-4 text-slate-400 hover:text-white p-1 transition"
+          className="absolute top-4 right-4 text-zinc-400 hover:text-white p-2 min-h-[44px] min-w-[44px] flex items-center justify-center transition"
           aria-label="Close dialog"
         >
           <X className="w-5 h-5" />
         </button>
 
-        <div className="mb-5">
-          <h2 className="text-xl font-bold text-white">Start a savings circle</h2>
-          <p className="text-xs text-slate-400 mt-1">
-            Define your circle parameters. You will be registered as the first member.
-          </p>
+        <div className="flex items-center gap-3 mb-6">
+          <div className="w-10 h-10 rounded-xl bg-black border border-zinc-700 flex items-center justify-center text-white shrink-0">
+            <PlusCircle className="w-5 h-5" />
+          </div>
+          <div>
+            <h2 className="text-lg font-bold text-white font-mono">Create Savings Circle</h2>
+            <p className="text-xs text-zinc-400 font-mono">Configure ROSCA parameters on Stellar</p>
+          </div>
         </div>
 
         <form onSubmit={handleSubmit} className="space-y-4">
           <div>
-            <label className="block text-xs font-medium text-slate-300 mb-1.5">
-              Contribution amount (USDC)
+            <label className="block text-xs font-semibold uppercase text-zinc-300 font-mono mb-1.5">
+              Contribution Per Member (USDC)
             </label>
             <div className="relative">
               <input
@@ -91,20 +94,20 @@ export const CreateCircleModal: React.FC<CreateCircleModalProps> = ({
                 min="1"
                 step="1"
                 required
-                className="w-full bg-[#0B0F14] border border-white/[0.12] rounded-xl px-3.5 py-2.5 text-white text-sm focus:outline-none focus:border-[#E5A93C]"
+                className="w-full bg-black border border-zinc-700 rounded-lg px-4 py-3 text-white font-mono focus:outline-none focus:border-white min-h-[44px]"
               />
-              <span className="absolute right-3.5 top-2.5 text-xs text-slate-400 font-semibold">
+              <span className="absolute right-4 top-3 text-xs text-zinc-400 font-mono font-bold">
                 USDC
               </span>
             </div>
-            <span className="text-xs text-[#E5A93C] mt-1 block font-medium">
-              ~ {formatNGN(usdcNum)} per member per round
+            <span className="text-[11px] text-zinc-400 font-mono mt-1 block">
+              Estimated: {formatNGN(usdcNum)} per round
             </span>
           </div>
 
           <div>
-            <label className="block text-xs font-medium text-slate-300 mb-1.5">
-              Number of members
+            <label className="block text-xs font-semibold uppercase text-zinc-300 font-mono mb-1.5">
+              Max Members (Circle Size)
             </label>
             <input
               type="number"
@@ -113,52 +116,49 @@ export const CreateCircleModal: React.FC<CreateCircleModalProps> = ({
               min="2"
               max="20"
               required
-              className="w-full bg-[#0B0F14] border border-white/[0.12] rounded-xl px-3.5 py-2.5 text-white text-sm focus:outline-none focus:border-[#E5A93C]"
+              className="w-full bg-black border border-zinc-700 rounded-lg px-4 py-3 text-white font-mono focus:outline-none focus:border-white min-h-[44px]"
             />
           </div>
 
           <div>
-            <label className="block text-xs font-medium text-slate-300 mb-1.5">
-              Round frequency
+            <label className="block text-xs font-semibold uppercase text-zinc-300 font-mono mb-1.5">
+              Round Frequency (Days)
             </label>
             <select
               value={periodDays}
               onChange={(e) => setPeriodDays(e.target.value)}
-              className="w-full bg-[#0B0F14] border border-white/[0.12] rounded-xl px-3.5 py-2.5 text-white text-sm focus:outline-none focus:border-[#E5A93C]"
+              className="w-full bg-black border border-zinc-700 rounded-lg px-4 py-3 text-white font-mono focus:outline-none focus:border-white min-h-[44px]"
             >
-              <option value="1">Daily (1 day)</option>
-              <option value="7">Weekly (7 days)</option>
-              <option value="14">Bi-weekly (14 days)</option>
-              <option value="30">Monthly (30 days)</option>
+              <option value="1">1 Day (Daily)</option>
+              <option value="7">7 Days (Weekly)</option>
+              <option value="14">14 Days (Bi-Weekly)</option>
+              <option value="30">30 Days (Monthly)</option>
             </select>
           </div>
 
-          {/* Pot Preview Box */}
-          <div className="bg-[#0B0F14] border border-white/[0.08] p-4 rounded-xl flex items-center justify-between">
+          <div className="bg-black border border-zinc-800 p-3.5 rounded-xl flex items-center justify-between font-mono">
             <div>
-              <span className="text-xs text-slate-400 block">Total round pot</span>
-              <span className="text-lg font-bold text-white tabular-nums">
-                {formatUSDC(potTotal)}
+              <span className="text-[10px] text-zinc-400 uppercase tracking-wider block">
+                Total Round Pot
               </span>
+              <span className="text-lg font-bold text-white">${potTotal} USDC</span>
             </div>
             <div className="text-right">
-              <span className="text-xs text-slate-400 block">Naira estimate</span>
-              <span className="text-xs font-semibold text-[#E5A93C]">
-                ~ {formatNGN(potTotal)}
-              </span>
+              <span className="text-[10px] text-zinc-400 block">Naira Equivalent</span>
+              <span className="text-xs font-medium text-zinc-300">{formatNGN(potTotal)}</span>
             </div>
           </div>
 
           <button
             type="submit"
             disabled={isSubmitting}
-            className="w-full py-3 rounded-xl bg-[#E5A93C] hover:bg-[#F5BE58] text-black font-semibold text-sm transition disabled:opacity-50"
+            className="w-full py-3.5 min-h-[48px] rounded-lg bg-white hover:bg-zinc-200 text-black font-bold text-sm uppercase tracking-wider transition disabled:opacity-50 touch-target flex items-center justify-center"
           >
             {isSubmitting
               ? 'Deploying to Soroban...'
               : !isConnected
-              ? 'Connect wallet to deploy'
-              : 'Create circle'}
+              ? 'Connect Wallet to Deploy'
+              : 'Create Circle'}
           </button>
         </form>
       </div>

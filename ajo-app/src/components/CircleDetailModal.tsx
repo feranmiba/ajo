@@ -3,7 +3,7 @@
 import React, { useState } from 'react';
 import { CircleData, formatAddress, formatUSDC, formatNGN } from '@/lib/stellar';
 import { useWallet } from '@/context/WalletContext';
-import { X, Check } from 'lucide-react';
+import { X, Sparkles } from 'lucide-react';
 
 interface CircleDetailModalProps {
   circle: CircleData | null;
@@ -31,7 +31,7 @@ export const CircleDetailModal: React.FC<CircleDetailModalProps> = ({
     if (!isConnected) return connect();
     setIsProcessing(true);
     try {
-      await new Promise((r) => setTimeout(r, 800));
+      await new Promise((r) => setTimeout(r, 1000));
       const updated = {
         ...circle,
         members: [...circle.members, address!],
@@ -46,7 +46,7 @@ export const CircleDetailModal: React.FC<CircleDetailModalProps> = ({
   const handleStart = async () => {
     setIsProcessing(true);
     try {
-      await new Promise((r) => setTimeout(r, 1000));
+      await new Promise((r) => setTimeout(r, 1200));
       const updated: CircleData = {
         ...circle,
         status: 'Active',
@@ -61,7 +61,7 @@ export const CircleDetailModal: React.FC<CircleDetailModalProps> = ({
     if (!isConnected) return connect();
     setIsProcessing(true);
     try {
-      await new Promise((r) => setTimeout(r, 1200));
+      await new Promise((r) => setTimeout(r, 1500));
       alert(`Successfully contributed ${formatUSDC(circle.amount)} USDC to Circle #${circle.id}!`);
     } finally {
       setIsProcessing(false);
@@ -71,7 +71,7 @@ export const CircleDetailModal: React.FC<CircleDetailModalProps> = ({
   const handlePayout = async () => {
     setIsProcessing(true);
     try {
-      await new Promise((r) => setTimeout(r, 1200));
+      await new Promise((r) => setTimeout(r, 1500));
       const recipient = circle.payoutOrder[circle.currentRound] || circle.admin;
       alert(`Successfully paid out ${formatUSDC(potSize)} USDC to recipient ${formatAddress(recipient)}!`);
       const nextRound = circle.currentRound + 1;
@@ -88,44 +88,40 @@ export const CircleDetailModal: React.FC<CircleDetailModalProps> = ({
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm">
-      <div className="bg-[#121821] border border-white/[0.1] rounded-2xl max-w-lg w-full p-6 relative shadow-2xl flex flex-col max-h-[90vh]">
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/90 backdrop-blur-md">
+      <div className="bg-[#18181b] border border-zinc-700 rounded-2xl max-w-xl w-full p-6 relative shadow-2xl overflow-hidden max-h-[90vh] flex flex-col">
         <button
           onClick={onClose}
-          className="absolute top-4 right-4 text-slate-400 hover:text-white p-1 transition"
+          className="absolute top-4 right-4 text-zinc-400 hover:text-white p-2 min-h-[44px] min-w-[44px] flex items-center justify-center transition"
           aria-label="Close dialog"
         >
           <X className="w-5 h-5" />
         </button>
 
-        {/* Header */}
-        <div className="flex items-center gap-3 mb-5">
-          <div className="w-10 h-10 rounded-xl bg-[#0B0F14] border border-white/[0.1] flex items-center justify-center text-white font-semibold text-sm">
+        <div className="flex items-center gap-3 mb-4">
+          <div className="w-12 h-12 rounded-xl bg-black border border-zinc-700 flex items-center justify-center text-white font-mono font-bold text-lg shrink-0">
             #{circle.id}
           </div>
           <div>
             <div className="flex items-center gap-2">
-              <h2 className="text-lg font-bold text-white">Circle #{circle.id}</h2>
-              <span className="text-xs px-2.5 py-0.5 rounded-full border bg-white/[0.05] border-white/[0.1] text-slate-300">
+              <h2 className="text-xl font-bold text-white font-mono">Circle #{circle.id}</h2>
+              <span className="text-xs px-2.5 py-0.5 rounded-full font-mono border bg-white text-black font-bold">
                 {circle.status}
               </span>
             </div>
-            <p className="text-xs text-slate-400">
-              Organizer: <span className="font-mono text-slate-300">{formatAddress(circle.admin, 6)}</span>
-            </p>
+            <p className="text-xs text-zinc-400 font-mono">Admin: {formatAddress(circle.admin, 6)}</p>
           </div>
         </div>
 
-        {/* Tab Navigation */}
-        <div className="flex border-b border-white/[0.08] mb-4 gap-6">
+        <div className="flex border-b border-zinc-800 mb-4 gap-4">
           {(['overview', 'members', 'actions'] as const).map((tab) => (
             <button
               key={tab}
               onClick={() => setActiveTab(tab)}
-              className={`pb-2.5 text-xs font-medium capitalize border-b-2 transition-colors ${
+              className={`pb-2.5 text-xs font-mono font-bold uppercase tracking-wider border-b-2 min-h-[44px] flex items-center touch-target transition-colors ${
                 activeTab === tab
-                  ? 'border-[#E5A93C] text-white font-semibold'
-                  : 'border-transparent text-slate-400 hover:text-slate-200'
+                  ? 'border-white text-white'
+                  : 'border-transparent text-zinc-500 hover:text-zinc-300'
               }`}
             >
               {tab}
@@ -133,50 +129,35 @@ export const CircleDetailModal: React.FC<CircleDetailModalProps> = ({
           ))}
         </div>
 
-        {/* Tab Content */}
-        <div className="overflow-y-auto flex-1 space-y-4 pr-1 text-xs">
+        <div className="overflow-y-auto flex-1 space-y-4 pr-1 font-mono text-xs">
           {activeTab === 'overview' && (
             <>
-              <div className="grid grid-cols-2 gap-3 bg-[#0B0F14] p-4 rounded-xl border border-white/[0.06]">
+              <div className="grid grid-cols-2 gap-3 bg-black p-4 rounded-xl border border-zinc-800">
                 <div>
-                  <span className="text-slate-400 block mb-0.5">Round pot</span>
-                  <span className="text-xl font-bold text-white tabular-nums block">
-                    {formatUSDC(potSize)}
-                  </span>
-                  <span className="text-xs text-[#E5A93C] font-medium block mt-0.5">
-                    ~ {formatNGN(potSize)}
-                  </span>
+                  <span className="text-[10px] text-zinc-400 uppercase tracking-wider block">Round Pot</span>
+                  <span className="text-xl font-bold text-white block tabular-nums">{formatUSDC(potSize)}</span>
+                  <span className="text-[10px] text-zinc-400 block">{formatNGN(potSize)}</span>
                 </div>
                 <div>
-                  <span className="text-slate-400 block mb-0.5">Contribution per round</span>
-                  <span className="text-base font-semibold text-slate-200 tabular-nums block">
-                    {formatUSDC(circle.amount)}
-                  </span>
-                  <span className="text-xs text-slate-400 block mt-0.5">
-                    ~ {formatNGN(circle.amount)}
-                  </span>
+                  <span className="text-[10px] text-zinc-400 uppercase tracking-wider block">Round Contribution</span>
+                  <span className="text-lg font-semibold text-zinc-200 block tabular-nums">{formatUSDC(circle.amount)}</span>
+                  <span className="text-[10px] text-zinc-400 block">{formatNGN(circle.amount)}</span>
                 </div>
               </div>
 
-              <div className="bg-[#0B0F14] p-4 rounded-xl border border-white/[0.06] space-y-2.5 text-xs">
-                <div className="flex justify-between">
-                  <span className="text-slate-400">Current round:</span>
-                  <span className="font-medium text-white">
+              <div className="bg-zinc-900/60 p-4 rounded-xl border border-zinc-800 space-y-2.5">
+                <div className="flex justify-between text-zinc-300">
+                  <span className="text-zinc-400">Current Round:</span>
+                  <span className="font-semibold text-white">
                     Round {circle.currentRound + 1} of {circle.maxMembers}
                   </span>
                 </div>
-                <div className="flex justify-between">
-                  <span className="text-slate-400">Scheduled recipient:</span>
-                  <span className="font-mono text-slate-200">
+                <div className="flex justify-between text-zinc-300">
+                  <span className="text-zinc-400">Turn Recipient:</span>
+                  <span className="font-semibold text-white font-mono">
                     {circle.payoutOrder[circle.currentRound]
-                      ? formatAddress(circle.payoutOrder[circle.currentRound], 6)
-                      : 'Pending circle start'}
-                  </span>
-                </div>
-                <div className="flex justify-between">
-                  <span className="text-slate-400">Roster capacity:</span>
-                  <span className="font-medium text-white">
-                    {circle.members.length} / {circle.maxMembers} members
+                      ? formatAddress(circle.payoutOrder[circle.currentRound])
+                      : 'Pending Start'}
                   </span>
                 </div>
               </div>
@@ -185,26 +166,24 @@ export const CircleDetailModal: React.FC<CircleDetailModalProps> = ({
 
           {activeTab === 'members' && (
             <div className="space-y-2">
-              <span className="text-xs text-slate-400 block">
-                Rotation order ({circle.members.length} of {circle.maxMembers} joined)
-              </span>
-              <div className="divide-y divide-white/[0.06] bg-[#0B0F14] rounded-xl border border-white/[0.06] overflow-hidden">
+              <h4 className="text-[10px] uppercase font-bold text-zinc-400 tracking-wider">
+                Member Roster ({circle.members.length}/{circle.maxMembers})
+              </h4>
+              <div className="divide-y divide-zinc-800 bg-black rounded-xl border border-zinc-800 overflow-hidden">
                 {circle.members.map((m, idx) => (
-                  <div key={m + idx} className="p-3 flex items-center justify-between text-xs">
-                    <div className="flex items-center gap-2.5">
-                      <span className="w-5 h-5 rounded-full bg-white/[0.06] text-slate-300 text-[10px] flex items-center justify-center font-medium">
+                  <div key={m + idx} className="p-3 flex items-center justify-between">
+                    <div className="flex items-center gap-2">
+                      <span className="w-5 h-5 rounded-full bg-zinc-800 text-white text-[10px] flex items-center justify-center font-bold">
                         {idx + 1}
                       </span>
-                      <span className="font-mono text-slate-200">{formatAddress(m, 6)}</span>
+                      <span className="font-medium text-white">{formatAddress(m, 6)}</span>
                       {m === circle.admin && (
-                        <span className="text-[10px] px-1.5 py-0.5 rounded bg-white/[0.06] text-slate-300 border border-white/[0.08]">
-                          Organizer
+                        <span className="text-[9px] px-1.5 py-0.5 rounded bg-zinc-800 text-zinc-300 border border-zinc-700">
+                          Admin
                         </span>
                       )}
                     </div>
-                    {m === address && (
-                      <span className="text-xs text-[#E5A93C] font-semibold">You</span>
-                    )}
+                    {m === address && <span className="text-xs text-white font-bold">You</span>}
                   </div>
                 ))}
               </div>
@@ -217,9 +196,9 @@ export const CircleDetailModal: React.FC<CircleDetailModalProps> = ({
                 <button
                   onClick={handleJoin}
                   disabled={isProcessing}
-                  className="w-full py-3 rounded-xl bg-[#E5A93C] text-black font-semibold hover:bg-[#F5BE58] transition"
+                  className="w-full py-3.5 min-h-[48px] rounded-lg bg-white text-black font-bold uppercase tracking-wider hover:bg-zinc-200 transition touch-target flex items-center justify-center"
                 >
-                  {isProcessing ? 'Joining circle...' : 'Join this circle'}
+                  {isProcessing ? 'Processing Join...' : 'Join Circle'}
                 </button>
               )}
 
@@ -227,9 +206,9 @@ export const CircleDetailModal: React.FC<CircleDetailModalProps> = ({
                 <button
                   onClick={handleStart}
                   disabled={isProcessing}
-                  className="w-full py-3 rounded-xl bg-white text-black font-semibold hover:bg-slate-200 transition"
+                  className="w-full py-3.5 min-h-[48px] rounded-lg bg-white text-black font-bold uppercase tracking-wider hover:bg-zinc-200 transition touch-target flex items-center justify-center"
                 >
-                  {isProcessing ? 'Starting circle...' : 'Lock roster and start circle'}
+                  {isProcessing ? 'Locking & Starting...' : 'Start Circle (Lock Roster)'}
                 </button>
               )}
 
@@ -237,11 +216,10 @@ export const CircleDetailModal: React.FC<CircleDetailModalProps> = ({
                 <button
                   onClick={handleContribute}
                   disabled={isProcessing}
-                  className="w-full py-3 rounded-xl bg-[#E5A93C] text-black font-semibold hover:bg-[#F5BE58] transition"
+                  className="w-full py-3.5 min-h-[48px] rounded-lg bg-white text-black font-bold uppercase tracking-wider hover:bg-zinc-200 transition flex items-center justify-center gap-2 touch-target"
                 >
-                  {isProcessing
-                    ? 'Processing transfer...'
-                    : `Contribute ${formatUSDC(circle.amount)} USDC (~${formatNGN(circle.amount)})`}
+                  <Sparkles className="w-4 h-4" />
+                  <span>{isProcessing ? 'Processing Transfer...' : `Contribute ${formatUSDC(circle.amount)} USDC (~${formatNGN(circle.amount)})`}</span>
                 </button>
               )}
 
@@ -249,18 +227,10 @@ export const CircleDetailModal: React.FC<CircleDetailModalProps> = ({
                 <button
                   onClick={handlePayout}
                   disabled={isProcessing}
-                  className="w-full py-3 rounded-xl bg-white text-black font-semibold hover:bg-slate-200 transition"
+                  className="w-full py-3.5 min-h-[48px] rounded-lg bg-white text-black font-bold uppercase tracking-wider hover:bg-zinc-200 transition touch-target flex items-center justify-center"
                 >
-                  {isProcessing
-                    ? 'Executing payout...'
-                    : `Execute round ${circle.currentRound + 1} payout`}
+                  {isProcessing ? 'Executing Payout...' : `Execute Round ${circle.currentRound + 1} Payout`}
                 </button>
-              )}
-
-              {circle.status === 'Completed' && (
-                <div className="p-4 text-center text-xs text-slate-400 bg-[#0B0F14] rounded-xl border border-white/[0.06]">
-                  This circle has completed all {circle.maxMembers} payout rounds.
-                </div>
               )}
             </div>
           )}

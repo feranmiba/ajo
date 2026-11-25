@@ -10,9 +10,9 @@ import { CircleDetailModal } from '@/components/CircleDetailModal';
 import { WorkflowVisualizer } from '@/components/WorkflowVisualizer';
 import { ProtocolFeatures } from '@/components/ProtocolFeatures';
 import { SavingsCalculator } from '@/components/SavingsCalculator';
-import { CircleData, formatUSDC, formatNGN, formatAddress } from '@/lib/stellar';
+import { CircleData, formatUSDC, formatNGN } from '@/lib/stellar';
 import { useWallet } from '@/context/WalletContext';
-import { Plus, ArrowDown, Users, Check, ArrowRight } from 'lucide-react';
+import { PlusCircle, ArrowRight, ShieldCheck, Sparkles, Layers } from 'lucide-react';
 
 const INITIAL_CIRCLES: CircleData[] = [
   {
@@ -26,54 +26,40 @@ const INITIAL_CIRCLES: CircleData[] = [
     currentRound: 0,
     members: [
       'GBBD47IF6LWK2P7MDEVSCWR7DPUWV3NY3DTQEVFL4TW45A6BO5BAGGGH',
-      'GCDK94LVMDEVSCWR7DPUWV3NY3DTQEVFL4TW45A6BO5BWXYZ',
-      'GABC11K7MDEVSCWR7DPUWV3NY3DTQEVFL4TW45A6BO5B1234',
-      'GXYZ88JFMDEVSCWR7DPUWV3NY3DTQEVFL4TW45A6BO5B9876',
+      'GCDK...WXYZ',
+      'GABC...1234',
+      'GXYZ...9876',
     ],
     payoutOrder: [
       'GBBD47IF6LWK2P7MDEVSCWR7DPUWV3NY3DTQEVFL4TW45A6BO5BAGGGH',
-      'GCDK94LVMDEVSCWR7DPUWV3NY3DTQEVFL4TW45A6BO5BWXYZ',
-      'GABC11K7MDEVSCWR7DPUWV3NY3DTQEVFL4TW45A6BO5B1234',
-      'GXYZ88JFMDEVSCWR7DPUWV3NY3DTQEVFL4TW45A6BO5B9876',
+      'GCDK...WXYZ',
+      'GABC...1234',
+      'GXYZ...9876',
     ],
   },
   {
     id: 102,
-    admin: 'GCDK55RTMDEVSCWR7DPUWV3NY3DTQEVFL4TW45A6BO5BTESTNET',
+    admin: 'GCDK55...TESTNET',
     token: 'USDC (Stellar Testnet)',
     amount: 100,
     periodSecs: 2592000, // 30 days
     maxMembers: 5,
     status: 'Created',
     currentRound: 0,
-    members: [
-      'GCDK55RTMDEVSCWR7DPUWV3NY3DTQEVFL4TW45A6BO5BTESTNET',
-      'GDEF33VBMDEVSCWR7DPUWV3NY3DTQEVFL4TW45A6BO5B5678',
-    ],
-    payoutOrder: [
-      'GCDK55RTMDEVSCWR7DPUWV3NY3DTQEVFL4TW45A6BO5BTESTNET',
-      'GDEF33VBMDEVSCWR7DPUWV3NY3DTQEVFL4TW45A6BO5B5678',
-    ],
+    members: ['GCDK55...TESTNET', 'GDEF...5678'],
+    payoutOrder: ['GCDK55...TESTNET', 'GDEF...5678'],
   },
   {
     id: 103,
-    admin: 'GXYZ99WQMDEVSCWR7DPUWV3NY3DTQEVFL4TW45A6BO5BSAVINGS',
+    admin: 'GXYZ99...SAVINGS',
     token: 'USDC (Stellar Testnet)',
     amount: 25,
-    periodSecs: 604800, // 7 days
+    periodSecs: 86400, // 1 day
     maxMembers: 3,
     status: 'Active',
     currentRound: 1,
-    members: [
-      'GXYZ99WQMDEVSCWR7DPUWV3NY3DTQEVFL4TW45A6BO5BSAVINGS',
-      'GABC11K7MDEVSCWR7DPUWV3NY3DTQEVFL4TW45A6BO5B1234',
-      'GHIJ77ZXMDEVSCWR7DPUWV3NY3DTQEVFL4TW45A6BO5B4321',
-    ],
-    payoutOrder: [
-      'GXYZ99WQMDEVSCWR7DPUWV3NY3DTQEVFL4TW45A6BO5BSAVINGS',
-      'GABC11K7MDEVSCWR7DPUWV3NY3DTQEVFL4TW45A6BO5B1234',
-      'GHIJ77ZXMDEVSCWR7DPUWV3NY3DTQEVFL4TW45A6BO5B4321',
-    ],
+    members: ['GXYZ99...SAVINGS', 'GABC...1234', 'GHIJ...4321'],
+    payoutOrder: ['GXYZ99...SAVINGS', 'GABC...1234', 'GHIJ...4321'],
   },
 ];
 
@@ -83,7 +69,6 @@ export default function Home() {
   const [isCreateOpen, setIsCreateOpen] = useState(false);
   const [selectedCircle, setSelectedCircle] = useState<CircleData | null>(null);
   const [filter, setFilter] = useState<'All' | 'Active' | 'Created'>('All');
-  const [previewTurn, setPreviewTurn] = useState<number>(0);
 
   const handleCreateSuccess = (newCircle: CircleData) => {
     setCircles([newCircle, ...circles]);
@@ -111,190 +96,92 @@ export default function Home() {
     element?.scrollIntoView({ behavior: 'smooth' });
   };
 
-  // 4-member preview cycle for hero live demonstration
-  const sampleMembers = [
-    { label: 'Member 1 (Admin)', address: 'GBBD47...GGGH', payoutRound: 0 },
-    { label: 'Member 2', address: 'GCDK94...WXYZ', payoutRound: 1 },
-    { label: 'Member 3', address: 'GABC11...1234', payoutRound: 2 },
-    { label: 'Member 4', address: 'GXYZ88...9876', payoutRound: 3 },
-  ];
-
   return (
-    <div className="min-h-screen flex flex-col bg-[#0B0F14] text-[#F8FAFC]">
+    <div className="min-h-screen flex flex-col bg-[#050505] text-white selection:bg-white selection:text-black font-sans">
       <RiskBanner />
       <Navbar onOpenCreate={() => setIsCreateOpen(true)} />
 
-      {/* Hero Section */}
-      <section className="px-4 sm:px-6 lg:px-8 pt-12 pb-16 md:pt-20 md:pb-24 border-b border-white/[0.08] relative">
-        <div className="max-w-7xl mx-auto grid grid-cols-1 lg:grid-cols-12 gap-12 items-center">
+      {/* Full Viewport First Screen Hero Section */}
+      <section className="min-h-[calc(100vh-4rem)] flex items-center px-4 sm:px-6 lg:px-8 border-b border-zinc-800 bg-[#050505] relative">
+        <div className="max-w-7xl mx-auto w-full grid grid-cols-1 lg:grid-cols-12 gap-8 lg:gap-12 items-center py-10 sm:py-16">
           
-          {/* Left Column: Core Value Proposition */}
-          <div className="lg:col-span-7 space-y-6">
-            <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-white/[0.04] border border-white/[0.1] text-xs text-slate-300">
-              <span className="w-1.5 h-1.5 rounded-full bg-[#E5A93C]" />
-              <span>Nigerian ROSCA tradition on Stellar blockchain</span>
-            </div>
-
-            <h1 className="text-4xl sm:text-5xl lg:text-6xl font-extrabold text-white tracking-tight leading-[1.08]">
-              Save together. Collect your turn.
-            </h1>
-
-            <p className="text-base sm:text-lg text-slate-300 max-w-xl leading-relaxed">
-              Ajo digitizes traditional community savings (esusu) using Soroban smart contracts. Pool weekly or monthly contributions in USDC to hedge against local currency inflation, with automated disbursements held in non-custodial escrow.
-            </p>
-
-            <div className="flex flex-wrap items-center gap-3 pt-2">
-              <button
-                onClick={scrollToExplorer}
-                className="px-6 py-3.5 rounded-xl bg-[#E5A93C] hover:bg-[#F5BE58] text-black font-semibold text-sm transition shadow-sm flex items-center gap-2"
-              >
-                <span>Browse circles</span>
-                <ArrowDown className="w-4 h-4" />
-              </button>
-
-              <button
-                onClick={() => setIsCreateOpen(true)}
-                className="px-5 py-3.5 rounded-xl bg-white/[0.05] hover:bg-white/[0.1] text-white border border-white/[0.12] font-semibold text-sm transition flex items-center gap-2"
-              >
-                <Plus className="w-4 h-4" />
-                <span>Start a circle</span>
-              </button>
-            </div>
-
-            {/* Protocol Metrics */}
-            <div className="pt-8 border-t border-white/[0.08] grid grid-cols-3 gap-6 text-xs max-w-lg">
-              <div>
-                <span className="text-slate-400 block mb-1">Pooled escrow</span>
-                <span className="text-lg font-bold text-white tabular-nums block">
-                  {formatUSDC(totalValueLocked)}
-                </span>
-                <span className="text-xs text-[#E5A93C] font-medium block mt-0.5">
-                  ~ {formatNGN(totalValueLocked)}
-                </span>
+          {/* Left Column: Naira, Dollar & Stablecoins Image Graphic */}
+          <div className="lg:col-span-6 relative order-2 lg:order-1">
+            <div className="relative rounded-3xl overflow-hidden border border-zinc-700 bg-[#18181b] p-2 sm:p-3 shadow-2xl group max-w-md sm:max-w-lg mx-auto lg:max-w-none">
+              <div className="relative aspect-square w-full rounded-2xl overflow-hidden bg-black">
+                <Image
+                  src="/hero-currencies.jpg"
+                  alt="Naira, Dollar, and USDC Stablecoin Savings Loop"
+                  fill
+                  priority
+                  className="object-cover group-hover:scale-105 transition-transform duration-500 opacity-90"
+                />
               </div>
-              <div>
-                <span className="text-slate-400 block mb-1">Active circles</span>
-                <span className="text-lg font-bold text-white tabular-nums block">
-                  {activeCount}
-                </span>
-                <span className="text-xs text-slate-400 block mt-0.5">
-                  Across Stellar testnet
-                </span>
+
+              {/* Floating Badges overlaying image */}
+              <div className="absolute top-4 sm:top-6 left-4 sm:left-6 bg-black/90 backdrop-blur-md border border-zinc-700 text-white text-xs px-3.5 py-2 rounded-xl font-mono font-bold shadow-xl flex items-center gap-2">
+                <span className="w-2 h-2 rounded-full bg-white animate-pulse" />
+                <span>₦ NGN / $ USD / ₮ USDC</span>
               </div>
-              <div>
-                <span className="text-slate-400 block mb-1">Disbursement</span>
-                <span className="text-lg font-bold text-white block">
-                  Automated
-                </span>
-                <span className="text-xs text-slate-400 block mt-0.5">
-                  Direct to wallet
-                </span>
+
+              <div className="absolute bottom-4 sm:bottom-6 right-4 sm:right-6 bg-black/90 backdrop-blur-md border border-zinc-700 text-white text-xs px-4 py-2 rounded-xl font-mono font-bold shadow-xl flex items-center gap-2">
+                <ShieldCheck className="w-4 h-4 text-white" />
+                <span>Soroban Escrow</span>
               </div>
             </div>
           </div>
 
-          {/* Right Column: Live Interactive Rotation Pass */}
-          <div className="lg:col-span-5">
-            <div className="bg-[#121821] border border-white/[0.1] rounded-3xl p-6 sm:p-7 shadow-xl">
-              <div className="flex items-center justify-between pb-4 border-b border-white/[0.08]">
-                <div>
-                  <span className="text-xs text-slate-400 block">Demonstration</span>
-                  <h3 className="text-base font-bold text-white">How a 4-member circle rotates</h3>
-                </div>
-                <div className="text-right">
-                  <span className="text-xs text-slate-400 block">$50 / week</span>
-                  <span className="text-xs font-semibold text-[#E5A93C]">$200 total pot</span>
-                </div>
+          {/* Right Column: Hero Headline & Action Buttons */}
+          <div className="lg:col-span-6 space-y-6 order-1 lg:order-2">
+            <div className="inline-flex items-center gap-2 px-3.5 py-2 rounded-full bg-[#18181b] border border-zinc-700 text-zinc-300 text-xs font-semibold font-mono">
+              <Sparkles className="w-3.5 h-3.5 text-white" />
+              <span>Rotating Savings Protocol (Ajo / Esusu / ROSCA)</span>
+            </div>
+
+            <h1 className="text-3xl sm:text-5xl lg:text-6xl font-black text-white tracking-tight leading-[1.1] font-sans">
+              Decentralized Savings on <span className="underline decoration-zinc-500 underline-offset-8">Stellar</span>
+            </h1>
+
+            <p className="text-zinc-300 text-sm sm:text-base lg:text-lg max-w-xl leading-relaxed">
+              Automate community ROSCA savings circles with zero middleman risk. Pool funds in USDC, protect against local inflation, and disburse full round pots on-chain.
+            </p>
+
+            <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3 sm:gap-4 pt-2">
+              <button
+                onClick={scrollToExplorer}
+                className="px-8 py-4 min-h-[48px] rounded-xl bg-white text-black font-extrabold text-sm uppercase tracking-wider hover:bg-zinc-200 shadow-xl transition transform hover:-translate-y-0.5 flex items-center justify-center gap-2 touch-target"
+              >
+                <span>Get Started</span>
+                <ArrowRight className="w-4 h-4" />
+              </button>
+
+              <button
+                onClick={() => setIsCreateOpen(true)}
+                className="px-6 py-4 min-h-[48px] rounded-xl bg-[#18181b] hover:bg-zinc-800 text-white border border-zinc-700 font-bold text-sm uppercase tracking-wider transition flex items-center justify-center gap-2 touch-target"
+              >
+                <PlusCircle className="w-4 h-4" />
+                <span>Create Circle</span>
+              </button>
+            </div>
+
+            {/* Protocol Metrics Bar */}
+            <div className="pt-6 border-t border-zinc-800 grid grid-cols-3 gap-3 sm:gap-4 font-mono text-xs">
+              <div>
+                <span className="text-zinc-400 block text-[10px] uppercase">Pooled Escrow</span>
+                <span className="text-sm sm:text-base font-bold text-white block tabular-nums">{formatUSDC(totalValueLocked)}</span>
+                <span className="text-[10px] text-zinc-400 block font-mono">~ {formatNGN(totalValueLocked)}</span>
               </div>
-
-              {/* Pot Vault */}
-              <div className="my-5 p-4 rounded-2xl bg-[#0B0F14] border border-white/[0.08] text-center">
-                <span className="text-xs text-slate-400 block">
-                  Round {previewTurn + 1} Escrow Vault
+              <div>
+                <span className="text-zinc-400 block text-[10px] uppercase">Active Circles</span>
+                <span className="text-sm sm:text-base font-bold text-white block tabular-nums">
+                  {activeCount}
                 </span>
-                <span className="text-3xl font-extrabold text-white tabular-nums tracking-tight block my-1">
-                  $200.00 USDC
-                </span>
-                <span className="text-xs text-[#E5A93C] font-medium block">
-                  ~ ₦310,000 NGN
-                </span>
+                <span className="text-[10px] text-zinc-400 block">On Testnet</span>
               </div>
-
-              {/* Member Rotation List */}
-              <div className="space-y-2">
-                {sampleMembers.map((m, idx) => {
-                  const isRecipient = previewTurn === idx;
-                  const isPast = previewTurn > idx;
-                  return (
-                    <div
-                      key={m.label}
-                      onClick={() => setPreviewTurn(idx)}
-                      className={`p-3 rounded-xl border transition-all cursor-pointer flex items-center justify-between text-xs ${
-                        isRecipient
-                          ? 'bg-[#182333] border-[#E5A93C] text-white shadow-sm'
-                          : 'bg-[#0B0F14] border-white/[0.06] text-slate-400 hover:text-slate-200'
-                      }`}
-                    >
-                      <div className="flex items-center gap-2.5">
-                        <span className={`w-5 h-5 rounded-full text-[10px] flex items-center justify-center font-bold ${
-                          isRecipient
-                            ? 'bg-[#E5A93C] text-black'
-                            : isPast
-                            ? 'bg-emerald-950 text-emerald-300 border border-emerald-800'
-                            : 'bg-white/[0.08] text-slate-300'
-                        }`}>
-                          {idx + 1}
-                        </span>
-                        <div>
-                          <span className={`font-semibold block ${isRecipient ? 'text-white' : 'text-slate-300'}`}>
-                            {m.label}
-                          </span>
-                          <span className="font-mono text-[10px] text-slate-400">
-                            {m.address}
-                          </span>
-                        </div>
-                      </div>
-
-                      <div className="text-right">
-                        {isRecipient ? (
-                          <span className="text-[11px] font-bold text-[#E5A93C]">
-                            Collects $200 pot
-                          </span>
-                        ) : isPast ? (
-                          <span className="text-[11px] text-emerald-400 flex items-center gap-1">
-                            <Check className="w-3 h-3" /> Payout settled
-                          </span>
-                        ) : (
-                          <span className="text-[11px] text-slate-400">
-                            Pays $50 round {previewTurn + 1}
-                          </span>
-                        )}
-                      </div>
-                    </div>
-                  );
-                })}
-              </div>
-
-              {/* Rotation Stepper Controls */}
-              <div className="mt-5 pt-4 border-t border-white/[0.08] flex items-center justify-between text-xs">
-                <span className="text-slate-400">
-                  Click a member or step through rounds:
-                </span>
-                <div className="flex items-center gap-1.5">
-                  {[0, 1, 2, 3].map((r) => (
-                    <button
-                      key={r}
-                      onClick={() => setPreviewTurn(r)}
-                      className={`w-6 h-6 rounded-lg text-xs font-semibold transition ${
-                        previewTurn === r
-                          ? 'bg-white text-black font-bold'
-                          : 'bg-white/[0.06] text-slate-400 hover:text-white'
-                      }`}
-                    >
-                      {r + 1}
-                    </button>
-                  ))}
-                </div>
+              <div>
+                <span className="text-zinc-400 block text-[10px] uppercase">Settlement</span>
+                <span className="text-sm sm:text-base font-bold text-white block">&lt; 5 seconds</span>
+                <span className="text-[10px] text-zinc-400 block">Instant Finality</span>
               </div>
             </div>
           </div>
@@ -303,36 +190,34 @@ export default function Home() {
       </section>
 
       {/* Main Content Area */}
-      <main id="circle-explorer" className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16 flex-1 w-full">
-        {/* Explorer Header & Filters */}
+      <main id="circle-explorer" className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12 sm:py-16 flex-1 w-full">
+        {/* Filter Toolbar */}
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-8">
           <div>
-            <h2 className="text-2xl sm:text-3xl font-bold text-white tracking-tight">
-              Savings circles
+            <h2 className="text-2xl sm:text-3xl font-bold text-white tracking-tight flex items-center gap-2 font-sans">
+              <Layers className="w-6 h-6 text-white" />
+              Savings Circles Explorer
             </h2>
-            <p className="text-xs sm:text-sm text-slate-400 mt-1">
-              Active and open ROSCA circles deployed on Stellar Testnet.
+            <p className="text-xs sm:text-sm text-zinc-400 mt-1 font-mono">
+              Browse active and open ROSCA circles deployed on Stellar Testnet
             </p>
           </div>
 
-          <div className="flex items-center gap-1.5 bg-[#121821] p-1 rounded-xl border border-white/[0.08]">
-            {(['All', 'Active', 'Created'] as const).map((tab) => {
-              const label = tab === 'All' ? 'All circles' : tab === 'Active' ? 'Active' : 'Open to join';
-              return (
-                <button
-                  key={tab}
-                  type="button"
-                  onClick={() => setFilter(tab)}
-                  className={`px-3.5 py-1.5 rounded-lg text-xs font-medium transition ${
-                    filter === tab
-                      ? 'bg-white text-black font-semibold shadow-sm'
-                      : 'text-slate-400 hover:text-white'
-                  }`}
-                >
-                  {label}
-                </button>
-              );
-            })}
+          <div className="flex items-center gap-2 bg-[#18181b] p-1.5 rounded-xl border border-zinc-800 font-mono">
+            {(['All', 'Active', 'Created'] as const).map((tab) => (
+              <button
+                key={tab}
+                type="button"
+                onClick={() => setFilter(tab)}
+                className={`px-4 py-2.5 min-h-[44px] rounded-lg text-xs font-semibold transition touch-target ${
+                  filter === tab
+                    ? 'bg-white text-black font-bold shadow'
+                    : 'text-zinc-400 hover:text-white'
+                }`}
+              >
+                {tab}
+              </button>
+            ))}
           </div>
         </div>
 
@@ -350,10 +235,10 @@ export default function Home() {
         {/* Workflow Visualizer */}
         <WorkflowVisualizer />
 
-        {/* Savings Planner Calculator */}
+        {/* Calculator */}
         <SavingsCalculator />
 
-        {/* Protocol Guarantees */}
+        {/* Protocol Features */}
         <ProtocolFeatures />
       </main>
 
@@ -371,30 +256,16 @@ export default function Home() {
       />
 
       {/* Footer */}
-      <footer className="border-t border-white/[0.08] bg-[#080B0F] py-10 text-xs text-slate-400">
+      <footer className="border-t border-zinc-800 bg-black py-8 text-center text-xs text-zinc-400 font-mono">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex flex-col sm:flex-row items-center justify-between gap-4">
-          <div>
-            <p className="font-medium text-slate-300">Ajo Protocol &copy; 2026</p>
-            <p className="text-slate-400 mt-0.5">Rotating savings and credit automation on Stellar Soroban.</p>
-          </div>
-          <div className="flex items-center gap-6 text-slate-400">
-            <a
-              href="/TRUST_ASSUMPTIONS.md"
-              className="hover:text-white transition"
-            >
-              Trust assumptions
-            </a>
-            <a
-              href="/CONTRIBUTING.md"
-              className="hover:text-white transition"
-            >
-              Contributing
-            </a>
+          <p>Ajo Protocol &copy; 2026 &bull; Soroban Smart Contracts on Stellar Testnet</p>
+          <div className="flex items-center gap-4 text-zinc-400">
+            <span>Contract ID: CB4G...SBLO</span>
             <a
               href="https://stellar.org"
               target="_blank"
               rel="noreferrer"
-              className="hover:text-white transition"
+              className="hover:text-white transition py-2"
             >
               Stellar.org
             </a>

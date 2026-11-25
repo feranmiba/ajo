@@ -28,107 +28,110 @@ export const CircleCard: React.FC<CircleCardProps> = ({ circle, onSelect }) => {
   const statusConfig = {
     Active: {
       label: `Round ${circle.currentRound + 1} of ${circle.maxMembers}`,
-      dot: 'bg-emerald-400',
-      badge: 'text-emerald-300 bg-emerald-950/60 border-emerald-800/60',
+      dot: 'bg-white',
+      badge: 'text-white bg-zinc-800 border-zinc-700',
     },
     Created: {
       label: 'Open to join',
-      dot: 'bg-[#E5A93C]',
-      badge: 'text-amber-300 bg-amber-950/60 border-amber-800/60',
+      dot: 'bg-zinc-400',
+      badge: 'text-zinc-300 bg-zinc-900 border-zinc-700',
     },
     Completed: {
       label: 'Completed',
-      dot: 'bg-slate-400',
-      badge: 'text-slate-300 bg-slate-900 border-slate-700',
+      dot: 'bg-zinc-500',
+      badge: 'text-zinc-400 bg-black border-zinc-800',
     },
     Cancelled: {
       label: 'Cancelled',
-      dot: 'bg-rose-400',
-      badge: 'text-rose-300 bg-rose-950/60 border-rose-800/60',
+      dot: 'bg-zinc-600',
+      badge: 'text-zinc-400 bg-black border-zinc-800',
     },
   }[circle.status];
 
   return (
     <article
       onClick={() => onSelect(circle)}
-      className="bg-[#121821] hover:bg-[#161F2B] border border-white/[0.08] hover:border-white/20 rounded-2xl p-5 cursor-pointer transition-all duration-200 flex flex-col justify-between group"
+      className="bg-[#18181b] hover:bg-[#202024] border border-zinc-800 hover:border-zinc-600 rounded-2xl p-5 sm:p-6 cursor-pointer transition-all duration-200 flex flex-col justify-between group touch-target min-h-[220px]"
     >
       <div>
         {/* Top Header */}
-        <div className="flex items-center justify-between pb-3.5 border-b border-white/[0.06]">
+        <div className="flex items-center justify-between pb-3.5 border-b border-zinc-800">
           <div className="flex items-center gap-2">
-            <span className="text-sm font-semibold text-white">Circle #{circle.id}</span>
-            <span className="text-xs text-slate-400 flex items-center gap-1">
-              <Calendar className="w-3 h-3 text-slate-400" />
+            <span className="text-sm font-bold text-white font-mono">Circle #{circle.id}</span>
+            <span className="text-xs text-zinc-400 flex items-center gap-1 font-mono">
+              <Calendar className="w-3 h-3 text-zinc-400" />
               {formatPeriod(circle.periodSecs)}
             </span>
           </div>
 
           <div
-            className={`flex items-center gap-1.5 text-xs px-2.5 py-0.5 rounded-full border ${statusConfig.badge}`}
+            className={`flex items-center gap-1.5 text-xs px-2.5 py-1 rounded-full border font-mono ${statusConfig.badge}`}
           >
             <span className={`w-1.5 h-1.5 rounded-full ${statusConfig.dot}`} />
-            <span className="font-medium">{statusConfig.label}</span>
+            <span className="font-semibold">{statusConfig.label}</span>
           </div>
         </div>
 
-        {/* Primary Financial Overview */}
-        <div className="grid grid-cols-2 gap-3 py-4">
+        {/* Primary Financial Overview Box */}
+        <div className="grid grid-cols-2 gap-3 my-4 bg-black p-3.5 rounded-xl border border-zinc-800">
           <div>
-            <span className="text-xs text-slate-400 block mb-1">Target pot</span>
-            <span className="text-2xl font-bold text-white tabular-nums tracking-tight block">
+            <span className="text-[10px] text-zinc-400 uppercase tracking-wider font-mono block">
+              Round Pot
+            </span>
+            <span className="text-lg sm:text-xl font-extrabold text-white font-mono block tabular-nums">
               {formatUSDC(potSize)}
             </span>
-            <span className="text-xs text-[#E5A93C] font-medium block mt-0.5">
-              ~ {formatNGN(potSize)}
+            <span className="text-[10px] text-zinc-400 block font-mono">
+              {formatNGN(potSize)}
             </span>
           </div>
 
-          <div className="text-right">
-            <span className="text-xs text-slate-400 block mb-1">Each member pays</span>
-            <span className="text-base font-semibold text-slate-200 tabular-nums block">
+          <div>
+            <span className="text-[10px] text-zinc-400 uppercase tracking-wider font-mono block">
+              Per Member
+            </span>
+            <span className="text-sm sm:text-base font-semibold text-zinc-300 font-mono block tabular-nums">
               {formatUSDC(circle.amount)}
             </span>
-            <span className="text-xs text-slate-400 block mt-0.5">
-              ~ {formatNGN(circle.amount)}
+            <span className="text-[10px] text-zinc-400 block font-mono">
+              {formatNGN(circle.amount)}
             </span>
           </div>
         </div>
 
         {/* Roster Progress */}
-        <div className="space-y-1.5 pt-1">
-          <div className="flex items-center justify-between text-xs text-slate-400">
-            <span className="flex items-center gap-1.5">
-              <Users className="w-3.5 h-3.5 text-slate-400" />
-              Members
+        <div className="space-y-1.5 my-3">
+          <div className="flex items-center justify-between text-xs font-mono">
+            <span className="text-zinc-400 flex items-center gap-1">
+              <Users className="w-3.5 h-3.5 text-white" /> Members
             </span>
-            <span className="text-slate-200 font-medium">
-              {circle.members.length} / {circle.maxMembers}
+            <span className="text-xs font-semibold text-white">
+              {circle.members.length} / {circle.maxMembers} ({progressPercent}%)
             </span>
           </div>
-          <div className="w-full h-1.5 bg-slate-800 rounded-full overflow-hidden">
+          <div className="w-full h-1.5 bg-zinc-800 rounded-full overflow-hidden">
             <div
               style={{ width: `${progressPercent}%` }}
-              className="h-full bg-slate-200 group-hover:bg-[#E5A93C] transition-colors rounded-full"
+              className="h-full bg-white rounded-full transition-all"
             />
           </div>
         </div>
       </div>
 
       {/* Footer Meta & Action */}
-      <div className="mt-5 pt-3 border-t border-white/[0.06] flex items-center justify-between text-xs text-slate-400">
+      <div className="mt-4 pt-3 border-t border-zinc-800 flex items-center justify-between text-xs font-mono text-zinc-400">
         <div>
           {circle.status === 'Active' && circle.payoutOrder[circle.currentRound] ? (
             <span>
-              Next turn: <span className="font-mono text-slate-200">{formatAddress(circle.payoutOrder[circle.currentRound])}</span>
+              Turn: <span className="text-zinc-200">{formatAddress(circle.payoutOrder[circle.currentRound])}</span>
             </span>
           ) : (
-            <span>Admin: <span className="font-mono text-slate-300">{formatAddress(circle.admin)}</span></span>
+            <span>Admin: <span className="text-zinc-300">{formatAddress(circle.admin)}</span></span>
           )}
         </div>
 
-        <span className="text-slate-300 group-hover:text-white flex items-center gap-1 font-medium transition-colors">
-          View
+        <span className="text-zinc-300 group-hover:text-white flex items-center gap-1 font-bold transition-colors py-1">
+          Details
           <ArrowRight className="w-3.5 h-3.5 transition-transform group-hover:translate-x-0.5" />
         </span>
       </div>
